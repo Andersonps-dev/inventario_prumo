@@ -1,9 +1,14 @@
 #!/bin/bash
-# Rode isso DEPOIS de já ter atualizado o código em /opt/prumo (o projeto
-# não é um repo git — copie os arquivos novos, ex. via scp/tar, antes).
+# Puxa a última versão da branch main do GitHub e reconstrói os containers.
+# /opt/prumo é um checkout git (remote via deploy key, só leitura) — não
+# rode isto de dentro de outro diretório nem espere código copiado à mão.
 set -e
 
 cd /opt/prumo
+
+echo "[deploy] Atualizando código a partir do GitHub..."
+git fetch origin
+git reset --hard origin/main
 
 echo "[deploy] Rebuilding containers..."
 docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build api web
