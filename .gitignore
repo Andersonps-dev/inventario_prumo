@@ -7,3 +7,5 @@ build/
 *.log
 .DS_Store
 apps/api/exports/
+.claude/scheduled_tasks.lock
+*.tsbuildinfo
