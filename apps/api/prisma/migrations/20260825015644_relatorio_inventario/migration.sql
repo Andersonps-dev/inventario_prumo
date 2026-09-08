@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "TipoExportacao" ADD VALUE 'RELATORIO_INVENTARIO';

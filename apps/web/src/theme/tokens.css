@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+@theme {
+  --color-aco: #12283f;
+  --color-latao: #e0a94a;
+  --color-latao-escuro: #b9832f;
+  --color-nevoa: #8fa6b8;
+  --color-concreto: #f4f5f3;
+  --color-conforme: #1f6f5c;
+  --color-divergente: #b3402f;
+
+  --font-sans:
+    'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --ease-prumo: cubic-bezier(0.23, 1, 0.32, 1);
+
+  --animate-prumo-backdrop: prumo-backdrop-in 180ms var(--ease-prumo);
+  --animate-prumo-panel: prumo-panel-in 220ms var(--ease-prumo);
+
+  @keyframes prumo-backdrop-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes prumo-panel-in {
+    from {
+      opacity: 0;
+      transform: translateY(-6px) scale(0.96);
+    }
+  }
+}
+
+body {
+  background-color: var(--color-concreto);
+  color: var(--color-aco);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}

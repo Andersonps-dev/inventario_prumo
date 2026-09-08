@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: prumo
+      POSTGRES_PASSWORD: prumo
+      POSTGRES_DB: prumo
+    ports:
+      - "5434:5432"
+    volumes:
+      - prumo_pg_data:/var/lib/postgresql/data
+    command: ["postgres", "-c", "wal_level=replica"]
+
+volumes:
+  prumo_pg_data:

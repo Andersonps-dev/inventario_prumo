@@ -1,0 +1,427 @@
+// Modelo de dados do Prumo — espelha a seção 5 do ROADMAP-PRUMO.md.
+// O roadmap autoriza ajustar tipos ao banco escolhido: aqui usamos Json
+// nativo do Postgres onde o roadmap descreve "TEXT (JSON)".
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Papel {
+  CONTADOR
+  SUPERVISOR
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum TipoMovimento {
+  ENTRADA
+  SAIDA
+  AJUSTE_INVENTARIO
+  TRANSFERENCIA
+}
+
+enum OrigemTipo {
+  ESCOPO_ITEM
+  MANUAL
+  IMPORTACAO
+  EVENTO_VENDA
+}
+
+enum StatusEventoVenda {
+  ABERTO
+  FECHADO
+}
+
+enum StatusEscopo {
+  RASCUNHO
+  ABERTO
+  EM_CONTAGEM
+  CONFERENCIA
+  EFETIVADO
+  CANCELADO
+}
+
+enum StatusEscopoItem {
+  PENDENTE
+  CONTADO
+  CANCELADO
+}
+
+enum StatusContagem {
+  VALIDA
+  SUBSTITUIDA
+  CANCELADA
+}
+
+enum AcaoAuditoria {
+  CRIAR
+  EDITAR
+  CANCELAR
+  EFETIVAR
+  EXPORTAR
+  EXCLUIR
+}
+
+enum PoliticaPendentes {
+  IGNORAR
+  ZERAR
+}
+
+enum TipoExportacao {
+  CATALOGO
+  POSICAO_ESTOQUE
+  KARDEX
+  ESCOPO
+  CONTAGENS
+  MOVIMENTOS
+  DASHBOARD
+  RELATORIO_INVENTARIO
+  RELATORIO_FEIRA
+}
+
+enum FormatoExportacao {
+  CSV
+  XLSX
+  JSON
+  XML
+}
+
+enum StatusExportacao {
+  PENDENTE
+  PROCESSANDO
+  CONCLUIDO
+  ERRO
+}
+
+// ─────────────── Empresas (multiempresa) ───────────────
+
+// Cada empresa é um tenant isolado: catálogo, depósitos, endereços,
+// escopos e estoque pertencem a exatamente uma. SUPER_ADMIN não
+// pertence a nenhuma (Usuario.empresaId nulo) e enxerga todas.
+model Empresa {
+  id       Int      @id @default(autoincrement())
+  nome     String
+  ativo    Boolean  @default(true)
+  criadoEm DateTime @default(now()) @map("criado_em")
+
+  produtos       Produto[]
+  depositos      Deposito[]
+  enderecos      Endereco[]
+  saldosEstoque  SaldoEstoque[]
+  movimentos     MovimentoEstoque[]
+  escopos        EscopoInventario[]
+  escopoItens    EscopoItem[]
+  contagens      Contagem[]
+  usuarios       Usuario[]
+  auditorias     Auditoria[]
+  exportacoes    ExportacaoJob[]
+  eventosVenda   EventoVenda[]
+
+  @@map("empresa")
+}
+
+// ─────────────── Catálogo ───────────────
+
+model Produto {
+  id             Int      @id @default(autoincrement())
+  empresaId      Int      @map("empresa_id")
+  empresa        Empresa  @relation(fields: [empresaId], references: [id])
+  sku            String
+  codigoBarras   String?  @map("codigo_barras")
+  nome           String
+  descricao      String?
+  unidade        String   @default("UN")
+  precoCusto     Decimal  @default(0) @map("preco_custo") @db.Decimal(14, 4)
+  estoqueMinimo  Decimal  @default(0) @map("estoque_minimo") @db.Decimal(14, 4)
+  ativo          Boolean  @default(true)
+  criadoEm       DateTime @default(now()) @map("criado_em")
+  atualizadoEm   DateTime @updatedAt @map("atualizado_em")
+
+  saldos     SaldoEstoque[]
+  movimentos MovimentoEstoque[]
+  itensEscopo EscopoItem[]
+
+  @@unique([empresaId, sku])
+  @@unique([empresaId, codigoBarras])
+  @@index([empresaId, nome])
+  @@map("produto")
+}
+
+model Deposito {
+  id        Int     @id @default(autoincrement())
+  empresaId Int     @map("empresa_id")
+  empresa   Empresa @relation(fields: [empresaId], references: [id])
+  nome      String
+  ativo     Boolean @default(true)
+
+  saldos     SaldoEstoque[]
+  movimentos MovimentoEstoque[]
+  escopos    EscopoInventario[]
+  enderecos  Endereco[]
+
+  eventosOrigem  EventoVenda[] @relation("EventoDepositoOrigem")
+  eventosVirtual EventoVenda[] @relation("EventoDepositoVirtual")
+
+  @@unique([empresaId, nome])
+  @@map("deposito")
+}
+
+// ─────────────── Endereçamento ───────────────
+
+// Cada depósito ganha um endereço-sentinela (interno = true, não aparece
+// na gestão de endereços nem entra na geração por faixa) que recebe todo
+// saldo/movimento ainda sem local físico atribuído — evita NULL em chave
+// composta e mantém "saldo é soma de saldo_estoque" válido sempre.
+model Endereco {
+  id         Int      @id @default(autoincrement())
+  empresaId  Int      @map("empresa_id")
+  empresa    Empresa  @relation(fields: [empresaId], references: [id])
+  codigo     String
+  depositoId Int      @map("deposito_id")
+  deposito   Deposito @relation(fields: [depositoId], references: [id])
+  setor      String
+  rua        String
+  modulo     String
+  nivel      String
+  vao        String
+  interno    Boolean  @default(false)
+  ativo      Boolean  @default(true)
+  criadoEm   DateTime @default(now()) @map("criado_em")
+
+  saldos      SaldoEstoque[]
+  movimentos  MovimentoEstoque[]
+  itensEscopo EscopoItem[]
+
+  @@unique([empresaId, codigo])
+  @@index([depositoId])
+  @@map("endereco")
+}
+
+// ─────────────── Estoque ───────────────
+
+model SaldoEstoque {
+  empresaId    Int      @map("empresa_id")
+  empresa      Empresa  @relation(fields: [empresaId], references: [id])
+  produtoId    Int      @map("produto_id")
+  produto      Produto  @relation(fields: [produtoId], references: [id])
+  depositoId   Int      @map("deposito_id")
+  deposito     Deposito @relation(fields: [depositoId], references: [id])
+  enderecoId   Int      @map("endereco_id")
+  endereco     Endereco @relation(fields: [enderecoId], references: [id])
+  quantidade   Decimal  @default(0) @db.Decimal(14, 4)
+  atualizadoEm DateTime @updatedAt @map("atualizado_em")
+
+  @@id([produtoId, depositoId, enderecoId])
+  @@index([empresaId])
+  @@map("saldo_estoque")
+}
+
+model MovimentoEstoque {
+  id             Int           @id @default(autoincrement())
+  empresaId      Int           @map("empresa_id")
+  empresa        Empresa       @relation(fields: [empresaId], references: [id])
+  produtoId      Int           @map("produto_id")
+  produto        Produto       @relation(fields: [produtoId], references: [id])
+  depositoId     Int           @map("deposito_id")
+  deposito       Deposito      @relation(fields: [depositoId], references: [id])
+  enderecoId     Int           @map("endereco_id")
+  endereco       Endereco      @relation(fields: [enderecoId], references: [id])
+  tipo           TipoMovimento
+  quantidade     Decimal       @db.Decimal(14, 4)
+  saldoAnterior  Decimal       @map("saldo_anterior") @db.Decimal(14, 4)
+  saldoPosterior Decimal       @map("saldo_posterior") @db.Decimal(14, 4)
+  custoUnitario  Decimal?      @map("custo_unitario") @db.Decimal(14, 4)
+  origemTipo     OrigemTipo?   @map("origem_tipo")
+  origemId       Int?          @map("origem_id")
+  motivo         String?
+  usuarioId      Int           @map("usuario_id")
+  usuario        Usuario       @relation(fields: [usuarioId], references: [id])
+  criadoEm       DateTime      @default(now()) @map("criado_em")
+
+  @@index([empresaId, produtoId, criadoEm])
+  @@index([origemTipo, origemId])
+  @@map("movimento_estoque")
+}
+
+// Saída temporária de estoque pra vender fora (feira, evento, consignação).
+// Ao abrir, o saldo escolhido sai do depósito real e entra num depósito
+// "virtual" dedicado ao evento (mesmo depósito comum, só que sem endereço
+// físico de verdade — existe puramente pra representar "está na feira").
+// Devoluções de itens não vendidos voltam do virtual pro depósito real. Ao
+// fechar, o que sobrar no virtual é o que foi vendido: vira relatório
+// congelado (preço no momento do fechamento) e o saldo restante é baixado.
+model EventoVenda {
+  id                  Int               @id @default(autoincrement())
+  empresaId           Int               @map("empresa_id")
+  empresa             Empresa           @relation(fields: [empresaId], references: [id])
+  titulo              String
+  depositoOrigemId    Int               @map("deposito_origem_id")
+  depositoOrigem      Deposito          @relation("EventoDepositoOrigem", fields: [depositoOrigemId], references: [id])
+  depositoVirtualId   Int               @map("deposito_virtual_id")
+  depositoVirtual     Deposito          @relation("EventoDepositoVirtual", fields: [depositoVirtualId], references: [id])
+  status              StatusEventoVenda @default(ABERTO)
+  relatorioFechamento Json?             @map("relatorio_fechamento")
+  criadoPor           Int               @map("criado_por")
+  criadoPorUsuario    Usuario           @relation("EventoCriadoPor", fields: [criadoPor], references: [id])
+  criadoEm            DateTime          @default(now()) @map("criado_em")
+  fechadoPor          Int?              @map("fechado_por")
+  fechadoPorUsuario   Usuario?          @relation("EventoFechadoPor", fields: [fechadoPor], references: [id])
+  fechadoEm           DateTime?         @map("fechado_em")
+
+  @@index([empresaId, status])
+  @@map("evento_venda")
+}
+
+// ─────────────── Inventário ───────────────
+
+model EscopoInventario {
+  id                  Int           @id @default(autoincrement())
+  empresaId           Int           @map("empresa_id")
+  empresa             Empresa       @relation(fields: [empresaId], references: [id])
+  codigo              String
+  titulo              String
+  depositoId          Int           @map("deposito_id")
+  deposito            Deposito      @relation(fields: [depositoId], references: [id])
+  status              StatusEscopo  @default(RASCUNHO)
+  criterioSelecao     Json?         @map("criterio_selecao")
+  responsavelId       Int?          @map("responsavel_id")
+  responsavel         Usuario?      @relation("EscopoResponsavel", fields: [responsavelId], references: [id])
+  prazo               DateTime?     @db.Date
+  observacao          String?
+  abertoPor           Int?          @map("aberto_por")
+  abertoPorUsuario    Usuario?      @relation("EscopoAbertoPor", fields: [abertoPor], references: [id])
+  abertoEm            DateTime?     @map("aberto_em")
+  efetivadoPor        Int?          @map("efetivado_por")
+  efetivadoPorUsuario Usuario?      @relation("EscopoEfetivadoPor", fields: [efetivadoPor], references: [id])
+  efetivadoEm         DateTime?     @map("efetivado_em")
+  canceladoPor        Int?          @map("cancelado_por")
+  canceladoPorUsuario Usuario?      @relation("EscopoCanceladoPor", fields: [canceladoPor], references: [id])
+  canceladoEm         DateTime?     @map("cancelado_em")
+  motivoCancelamento  String?       @map("motivo_cancelamento")
+  criadoEm            DateTime      @default(now()) @map("criado_em")
+
+  itens EscopoItem[]
+
+  @@unique([empresaId, codigo])
+  @@map("escopo_inventario")
+}
+
+model EscopoItem {
+  id                  Int              @id @default(autoincrement())
+  empresaId           Int              @map("empresa_id")
+  empresa             Empresa          @relation(fields: [empresaId], references: [id])
+  escopoId            Int              @map("escopo_id")
+  escopo              EscopoInventario @relation(fields: [escopoId], references: [id])
+  produtoId           Int              @map("produto_id")
+  produto             Produto          @relation(fields: [produtoId], references: [id])
+  enderecoId          Int              @map("endereco_id")
+  endereco            Endereco         @relation(fields: [enderecoId], references: [id])
+  saldoCongelado      Decimal          @map("saldo_congelado") @db.Decimal(14, 4)
+  saldoNaEfetivacao   Decimal?         @map("saldo_na_efetivacao") @db.Decimal(14, 4)
+  quantidadeFinal     Decimal?         @map("quantidade_final") @db.Decimal(14, 4)
+  diferenca           Decimal?         @db.Decimal(14, 4)
+  status              StatusEscopoItem @default(PENDENTE)
+
+  contagens Contagem[]
+
+  @@unique([escopoId, produtoId, enderecoId])
+  @@index([escopoId, status])
+  @@map("escopo_item")
+}
+
+model Contagem {
+  id                  Int             @id @default(autoincrement())
+  empresaId           Int             @map("empresa_id")
+  empresa             Empresa         @relation(fields: [empresaId], references: [id])
+  escopoItemId        Int             @map("escopo_item_id")
+  escopoItem          EscopoItem      @relation(fields: [escopoItemId], references: [id])
+  sequencia           Int
+  quantidade          Decimal         @db.Decimal(14, 4)
+  status              StatusContagem  @default(VALIDA)
+  observacao          String?
+  contadoPor          Int             @map("contado_por")
+  contadoPorUsuario   Usuario         @relation("ContagemContadoPor", fields: [contadoPor], references: [id])
+  contadoEm           DateTime        @default(now()) @map("contado_em")
+  canceladoPor        Int?            @map("cancelado_por")
+  canceladoPorUsuario Usuario?        @relation("ContagemCanceladoPor", fields: [canceladoPor], references: [id])
+  canceladoEm         DateTime?       @map("cancelado_em")
+  motivoCancelamento  String?         @map("motivo_cancelamento")
+
+  @@index([escopoItemId, sequencia])
+  @@index([empresaId, contadoPor])
+  @@map("contagem")
+}
+
+// ─────────────── Acesso e auditoria ───────────────
+
+model Usuario {
+  id        Int      @id @default(autoincrement())
+  // Nulo apenas para SUPER_ADMIN — todo outro papel pertence a uma empresa.
+  empresaId Int?     @map("empresa_id")
+  empresa   Empresa? @relation(fields: [empresaId], references: [id])
+  nome      String
+  email     String   @unique
+  senhaHash String   @map("senha_hash")
+  papel     Papel
+  ativo     Boolean  @default(true)
+  criadoEm  DateTime @default(now()) @map("criado_em")
+
+  movimentos          MovimentoEstoque[]
+  escoposResponsavel  EscopoInventario[] @relation("EscopoResponsavel")
+  escoposAbertos      EscopoInventario[] @relation("EscopoAbertoPor")
+  escoposEfetivados   EscopoInventario[] @relation("EscopoEfetivadoPor")
+  escoposCancelados   EscopoInventario[] @relation("EscopoCanceladoPor")
+  contagensFeitas     Contagem[]         @relation("ContagemContadoPor")
+  contagensCanceladas Contagem[]         @relation("ContagemCanceladoPor")
+  auditorias          Auditoria[]
+  exportacoes         ExportacaoJob[]
+  eventosCriados      EventoVenda[]      @relation("EventoCriadoPor")
+  eventosFechados     EventoVenda[]      @relation("EventoFechadoPor")
+
+  @@index([empresaId])
+  @@map("usuario")
+}
+
+model Auditoria {
+  id         Int           @id @default(autoincrement())
+  // Nulo em ações intrinsecamente cross-tenant do SUPER_ADMIN (criar
+  // empresa, listar todas etc.) — todo o resto carrega a empresa do ator.
+  empresaId  Int?          @map("empresa_id")
+  empresa    Empresa?      @relation(fields: [empresaId], references: [id])
+  entidade   String
+  entidadeId Int           @map("entidade_id")
+  acao       AcaoAuditoria
+  antes      Json?
+  depois     Json?
+  usuarioId  Int           @map("usuario_id")
+  usuario    Usuario       @relation(fields: [usuarioId], references: [id])
+  criadoEm   DateTime      @default(now()) @map("criado_em")
+
+  @@index([empresaId, criadoEm])
+  @@index([entidade, entidadeId])
+  @@map("auditoria")
+}
+
+model ExportacaoJob {
+  id               Int               @id @default(autoincrement())
+  empresaId        Int               @map("empresa_id")
+  empresa          Empresa           @relation(fields: [empresaId], references: [id])
+  tipo             TipoExportacao
+  formato          FormatoExportacao
+  filtros          Json?
+  status           StatusExportacao  @default(PENDENTE)
+  caminho          String?
+  erro             String?
+  criadoPor        Int               @map("criado_por")
+  criadoPorUsuario Usuario           @relation(fields: [criadoPor], references: [id])
+  criadoEm         DateTime          @default(now()) @map("criado_em")
+  concluidoEm      DateTime?         @map("concluido_em")
+
+  @@index([empresaId])
+  @@map("exportacao_job")
+}

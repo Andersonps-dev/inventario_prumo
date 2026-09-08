@@ -1,0 +1,18 @@
+{
+  "id": "/",
+  "name": "Prumo — inventário no prumo",
+  "short_name": "Prumo",
+  "description": "Controle de estoque e inventário: saldo, movimentos e contagens rastreáveis.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F4F5F3",
+  "theme_color": "#12283F",
+  "lang": "pt-BR",
+  "categories": ["business", "productivity"],
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

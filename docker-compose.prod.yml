@@ -1,0 +1,47 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      - DATABASE_URL=postgresql://prumo:${POSTGRES_PASSWORD}@postgres:5432/prumo?schema=public
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=8h
+      - PORT=3000
+      - CORS_ORIGIN=https://${DOMAIN}
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    networks:
+      - prumo-net
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    restart: unless-stopped
+    networks:
+      - prumo-net
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=prumo
+      - POSTGRES_USER=prumo
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - prumo-net
+    # Sem "ports:" publicado no host — só acessível de dentro da rede docker
+    # (api/web), diferente de um Postgres de dev exposto na máquina local.
+
+networks:
+  # external — o Nginx compartilhado do host (do outro projeto) entra nesta
+  # rede também, pra conseguir alcançar "api"/"web" pelo nome do serviço.
+  prumo-net:
+    name: prumo-net
+
+volumes:
+  postgres_data:

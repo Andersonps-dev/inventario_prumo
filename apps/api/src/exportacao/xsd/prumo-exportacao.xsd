@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="urn:prumo:exportacao"
+           xmlns="urn:prumo:exportacao"
+           elementFormDefault="qualified">
+
+  <xs:annotation>
+    <xs:documentation>
+      Schema genérico das exportações XML do Prumo (seção 7.5 do roadmap).
+      Todo tipo de exportação (catálogo, posição de estoque, kardex, escopo,
+      contagens, movimentos, indicadores do dashboard) usa a mesma forma:
+      um elemento raiz &lt;exportacao&gt; com o atributo `tipo` (um dos
+      valores do enum TipoExportacao da API) e `geradoEm` (timestamp UTC),
+      contendo uma sequência de elementos &lt;linha&gt;. Os nomes de campo
+      dentro de cada &lt;linha&gt; espelham as colunas documentadas no
+      endpoint que gerou o arquivo (GET /exportacoes/:tipo/colunas) e variam
+      por tipo — por isso o conteúdo de &lt;linha&gt; é `lax` aqui: este
+      schema valida a forma do envelope, não os campos de cada tipo.
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:element name="exportacao">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="linha" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name="tipo" type="xs:string" use="required" />
+      <xs:attribute name="geradoEm" type="xs:dateTime" use="required" />
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>
