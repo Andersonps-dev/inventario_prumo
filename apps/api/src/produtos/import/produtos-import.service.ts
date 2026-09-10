@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditoriaService } from '../../common/auditoria/auditoria.service';
 import { lerColunas, lerLinhas, paraNumero } from '../../common/planilha/planilha-reader';
@@ -75,6 +76,7 @@ export class ProdutosImportService {
     const skusExistentes = new Set(produtosExistentes.map((p) => p.sku));
     const codigosExistentes = new Set(produtosExistentes.map((p) => p.codigoBarras).filter(Boolean));
     const skusNoArquivo = new Set<string>();
+    const codigosBarraNoArquivo = new Set<string>();
 
     const resultado: LinhaValidada[] = linhasArquivo.map((linha, indice) => {
       const erros: string[] = [];
@@ -93,7 +95,10 @@ export class ProdutosImportService {
       if (!nome) erros.push('Nome é obrigatório.');
       if (codigoBarras && codigosExistentes.has(codigoBarras)) {
         erros.push(`Código de barras "${codigoBarras}" já existe no catálogo.`);
+      } else if (codigoBarras && codigosBarraNoArquivo.has(codigoBarras)) {
+        erros.push(`Código de barras "${codigoBarras}" duplicado no arquivo.`);
       }
+      if (codigoBarras) codigosBarraNoArquivo.add(codigoBarras);
       if (precoCusto === null) erros.push('Preço de custo inválido.');
       if (estoqueMinimo === null) erros.push('Estoque mínimo inválido.');
 
@@ -122,22 +127,32 @@ export class ProdutosImportService {
       return { criados: 0, ignorados: comErro.length, detalhesErro: comErro };
     }
 
-    const criados = await this.prisma.$transaction(
-      validas.map((linha) =>
-        this.prisma.produto.create({
-          data: {
-            empresaId,
-            sku: linha.sku,
-            codigoBarras: linha.codigoBarras,
-            nome: linha.nome,
-            descricao: linha.descricao,
-            unidade: linha.unidade,
-            precoCusto: linha.precoCusto,
-            estoqueMinimo: linha.estoqueMinimo,
-          },
-        }),
-      ),
-    );
+    let criados: { sku: string }[];
+    try {
+      criados = await this.prisma.$transaction(
+        validas.map((linha) =>
+          this.prisma.produto.create({
+            data: {
+              empresaId,
+              sku: linha.sku,
+              codigoBarras: linha.codigoBarras,
+              nome: linha.nome,
+              descricao: linha.descricao,
+              unidade: linha.unidade,
+              precoCusto: linha.precoCusto,
+              estoqueMinimo: linha.estoqueMinimo,
+            },
+          }),
+        ),
+      );
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+        throw new BadRequestException(
+          'Não foi possível gravar: algum produto ficou com SKU ou código de barras duplicado entre a prévia e a gravação. Gere a prévia novamente e tente de novo.',
+        );
+      }
+      throw e;
+    }
 
     await this.auditoria.registrar({
       entidade: 'produto',
