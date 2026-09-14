@@ -84,13 +84,18 @@ export function NovaFeiraModal({ onClose }: { onClose: () => void }) {
   return (
     <Modal title="Nova feira" onClose={onClose} largura="max-w-2xl">
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
-        <Field label="Título">
-          <Input required placeholder="Feira de Setembro, Bazar da praça…" value={titulo} onChange={(e) => setTitulo(e.target.value)} />
-        </Field>
-
-        <Field label="Data da feira (opcional)">
-          <Input type="date" value={dataEvento} onChange={(e) => setDataEvento(e.target.value)} className="w-full sm:w-48" />
-        </Field>
+        <div className="flex flex-col gap-4 sm:flex-row">
+          <div className="sm:flex-1">
+            <Field label="Título">
+              <Input required placeholder="Feira de Setembro, Bazar da praça…" value={titulo} onChange={(e) => setTitulo(e.target.value)} />
+            </Field>
+          </div>
+          <div className="sm:w-48 sm:shrink-0">
+            <Field label="Data da feira (opcional)">
+              <Input type="date" value={dataEvento} onChange={(e) => setDataEvento(e.target.value)} className="w-full" />
+            </Field>
+          </div>
+        </div>
 
         <Field label="Depósito de origem">
           <Select

@@ -27,13 +27,18 @@ export function EditarFeiraModal({ evento, onClose }: { evento: EventoVenda; onC
   return (
     <Modal title="Editar feira" onClose={onClose} largura="max-w-md">
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
-        <Field label="Título">
-          <Input required value={titulo} onChange={(e) => setTitulo(e.target.value)} />
-        </Field>
-
-        <Field label="Data da feira (opcional)">
-          <Input type="date" value={dataEvento} onChange={(e) => setDataEvento(e.target.value)} className="w-full sm:w-48" />
-        </Field>
+        <div className="flex flex-col gap-4 sm:flex-row">
+          <div className="sm:flex-1">
+            <Field label="Título">
+              <Input required value={titulo} onChange={(e) => setTitulo(e.target.value)} />
+            </Field>
+          </div>
+          <div className="sm:w-48 sm:shrink-0">
+            <Field label="Data da feira (opcional)">
+              <Input type="date" value={dataEvento} onChange={(e) => setDataEvento(e.target.value)} className="w-full" />
+            </Field>
+          </div>
+        </div>
 
         {erro && <div className="text-sm text-divergente">{erro}</div>}
 
