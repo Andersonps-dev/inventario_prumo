@@ -462,6 +462,14 @@ export class EscoposService {
       });
       const ultimaSequencia = ultimaContagem?.sequencia ?? 0;
 
+      // Cada bipagem do mesmo produto no mesmo endereço soma à contagem
+      // válida anterior — reflete o operador contando unidade por unidade
+      // ao bipar, em vez de cada bipagem substituir a anterior. Correção de
+      // um valor errado é feita cancelando a contagem (cancelarContagem),
+      // não bipando de novo por cima.
+      const quantidadeAcumulada =
+        ultimaContagem?.status === 'VALIDA' ? Number(ultimaContagem.quantidade) + Number(dto.quantidade) : Number(dto.quantidade);
+
       if (ultimaContagem?.status === 'VALIDA') {
         await tx.contagem.update({
           where: { id: ultimaContagem.id },
@@ -474,7 +482,7 @@ export class EscoposService {
           empresaId,
           escopoItemId: item.id,
           sequencia: ultimaSequencia + 1,
-          quantidade: dto.quantidade,
+          quantidade: quantidadeAcumulada,
           observacao: dto.observacao,
           contadoPor: usuarioId,
         },
@@ -483,8 +491,8 @@ export class EscoposService {
       await tx.escopoItem.update({
         where: { id: item.id },
         data: {
-          quantidadeFinal: dto.quantidade,
-          diferenca: Number(dto.quantidade) - Number(item.saldoCongelado),
+          quantidadeFinal: quantidadeAcumulada,
+          diferenca: quantidadeAcumulada - Number(item.saldoCongelado),
           status: 'CONTADO',
         },
       });
