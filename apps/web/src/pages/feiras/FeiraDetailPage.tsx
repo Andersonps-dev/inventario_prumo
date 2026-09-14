@@ -12,6 +12,7 @@ import { useAuth } from '../../app/AuthContext';
 import { ApiError } from '../../api/client';
 import { RetornoFeiraModal } from './RetornoFeiraModal';
 import { AdicionarItensFeiraModal } from './AdicionarItensFeiraModal';
+import { EditarFeiraModal } from './EditarFeiraModal';
 
 const moeda = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
@@ -21,6 +22,7 @@ export function FeiraDetailPage() {
   const { temPapel } = useAuth();
   const { data: evento, isLoading } = useEventoVenda(eventoId);
   const fechar = useFecharEventoVenda();
+  const [editando, setEditando] = useState(false);
   const [adicionandoItens, setAdicionandoItens] = useState(false);
   const [registrandoRetorno, setRegistrandoRetorno] = useState(false);
   const [confirmandoFechar, setConfirmandoFechar] = useState(false);
@@ -47,12 +49,22 @@ export function FeiraDetailPage() {
 
       <Card>
         <div className="flex items-center justify-between gap-3">
-          <h1 className="text-xl font-semibold text-aco">{evento.titulo}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-semibold text-aco">{evento.titulo}</h1>
+            {podeGerenciar && (
+              <button type="button" className="text-xs text-latao-escuro hover:underline" onClick={() => setEditando(true)}>
+                Editar
+              </button>
+            )}
+          </div>
           <Badge tom={evento.status}>{evento.status}</Badge>
         </div>
         <div className="mt-1 text-sm text-nevoa">
           Depósito de origem: {evento.depositoOrigem.nome} · Criado por {evento.criadoPorUsuario.nome} em{' '}
           {new Date(evento.criadoEm).toLocaleString('pt-BR')}
+        </div>
+        <div className="text-sm text-nevoa">
+          Data da feira: {evento.dataEvento ? new Date(evento.dataEvento).toLocaleDateString('pt-BR') : 'não definida'}
         </div>
         {evento.status === 'FECHADO' && evento.fechadoEm && (
           <div className="text-sm text-nevoa">
@@ -247,6 +259,8 @@ export function FeiraDetailPage() {
           </div>
         )
       )}
+
+      {editando && <EditarFeiraModal evento={evento} onClose={() => setEditando(false)} />}
 
       {adicionandoItens && (
         <AdicionarItensFeiraModal

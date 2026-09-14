@@ -284,6 +284,7 @@ export interface RelatorioFechamentoEvento {
 export interface EventoVenda {
   id: number;
   titulo: string;
+  dataEvento: string | null;
   status: StatusEventoVenda;
   depositoOrigemId: number;
   depositoVirtualId: number;

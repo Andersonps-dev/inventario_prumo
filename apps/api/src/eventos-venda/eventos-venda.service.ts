@@ -5,7 +5,7 @@ import { DepositosService } from '../depositos/depositos.service';
 import { EnderecosService } from '../enderecos/enderecos.service';
 import { EstoqueService } from '../estoque/estoque.service';
 import { AuditoriaService } from '../common/auditoria/auditoria.service';
-import { AdicionarItensEventoDto, CriarEventoVendaDto, ItemComPosicaoDto, RegistrarRetornoDto } from './dto/evento-venda.dto';
+import { AdicionarItensEventoDto, AtualizarEventoVendaDto, CriarEventoVendaDto, ItemComPosicaoDto, RegistrarRetornoDto } from './dto/evento-venda.dto';
 
 @Injectable()
 export class EventosVendaService {
@@ -48,6 +48,32 @@ export class EventosVendaService {
     return { ...evento, posicaoAtual };
   }
 
+  /** Edita título e/ou data da feira — não mexe em item nem em estoque, então vale pra feira aberta ou já fechada. */
+  async atualizar(id: number, dto: AtualizarEventoVendaDto, usuarioId: number, empresaId: number) {
+    const antes = await this.prisma.eventoVenda.findUnique({ where: { id } });
+    if (!antes || antes.empresaId !== empresaId) throw new NotFoundException('Evento de venda não encontrado.');
+
+    const depois = await this.prisma.eventoVenda.update({
+      where: { id },
+      data: {
+        titulo: dto.titulo,
+        dataEvento: dto.dataEvento ? new Date(dto.dataEvento) : undefined,
+      },
+    });
+
+    await this.auditoria.registrar({
+      entidade: 'evento_venda',
+      entidadeId: id,
+      acao: 'EDITAR',
+      antes,
+      depois,
+      usuarioId,
+      empresaId,
+    });
+
+    return this.buscarPorId(id, empresaId);
+  }
+
   /**
    * Abre um evento: cria um depósito virtual dedicado (some das telas
    * operacionais quando o evento fecha, igual qualquer depósito inativado)
@@ -75,6 +101,7 @@ export class EventosVendaService {
         data: {
           empresaId,
           titulo: dto.titulo,
+          dataEvento: dto.dataEvento ? new Date(dto.dataEvento) : undefined,
           depositoOrigemId: depositoOrigem.id,
           depositoVirtualId: depositoVirtual.id,
           criadoPor: usuarioId,

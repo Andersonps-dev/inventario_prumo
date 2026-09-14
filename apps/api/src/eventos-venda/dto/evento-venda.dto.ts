@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { ArrayMinSize, IsArray, IsInt, IsNumber, IsPositive, IsString, MinLength, ValidateNested } from 'class-validator';
+import { ArrayMinSize, IsArray, IsDateString, IsInt, IsNumber, IsOptional, IsPositive, IsString, MinLength, ValidateNested } from 'class-validator';
 
 // `enderecoId` sempre se refere a uma posição do depósito de origem da
 // feira — o endereço de onde tirar (ao levar) ou pra onde devolver (ao
@@ -22,6 +22,10 @@ export class CriarEventoVendaDto {
   @MinLength(1)
   titulo!: string;
 
+  @IsOptional()
+  @IsDateString()
+  dataEvento?: string;
+
   @IsInt()
   depositoOrigemId!: number;
 
@@ -30,6 +34,17 @@ export class CriarEventoVendaDto {
   @ValidateNested({ each: true })
   @Type(() => ItemComPosicaoDto)
   itens!: ItemComPosicaoDto[];
+}
+
+export class AtualizarEventoVendaDto {
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  titulo?: string;
+
+  @IsOptional()
+  @IsDateString()
+  dataEvento?: string;
 }
 
 export class AdicionarItensEventoDto {

@@ -494,12 +494,24 @@ export interface ItemComPosicao {
 export function useCriarEventoVenda() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (dto: { titulo: string; depositoOrigemId: number; itens: ItemComPosicao[] }) =>
+    mutationFn: (dto: { titulo: string; dataEvento?: string; depositoOrigemId: number; itens: ItemComPosicao[] }) =>
       apiFetch<EventoVenda>('/eventos-venda', { method: 'POST', body: dto }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['eventos-venda'] });
       qc.invalidateQueries({ queryKey: ['depositos'] });
       qc.invalidateQueries({ queryKey: ['estoque'] });
+    },
+  });
+}
+
+export function useAtualizarEventoVenda() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...dto }: { id: number; titulo?: string; dataEvento?: string }) =>
+      apiFetch<EventoVenda>(`/eventos-venda/${id}`, { method: 'PATCH', body: dto }),
+    onSuccess: (_d, v) => {
+      qc.invalidateQueries({ queryKey: ['eventos-venda', v.id] });
+      qc.invalidateQueries({ queryKey: ['eventos-venda'] });
     },
   });
 }

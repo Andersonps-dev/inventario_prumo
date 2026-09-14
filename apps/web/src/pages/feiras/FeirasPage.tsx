@@ -26,6 +26,7 @@ export function FeirasPage() {
   });
   const { linhasOrdenadas: eventosOrdenados, ordenacao, alternar } = useOrdenacao(eventosFiltrados, {
     titulo: (e) => e.titulo,
+    dataEvento: (e) => e.dataEvento,
     depositoOrigem: (e) => e.depositoOrigem.nome,
     criadoPor: (e) => e.criadoPorUsuario.nome,
     criadoEm: (e) => e.criadoEm,
@@ -67,6 +68,9 @@ export function FeirasPage() {
               <Th sortKey="titulo" ordenacao={ordenacao} onSort={alternar}>
                 Título
               </Th>
+              <Th sortKey="dataEvento" ordenacao={ordenacao} onSort={alternar}>
+                Data da feira
+              </Th>
               <Th sortKey="depositoOrigem" ordenacao={ordenacao} onSort={alternar}>
                 Depósito de origem
               </Th>
@@ -100,6 +104,7 @@ export function FeirasPage() {
                     {e.titulo}
                   </Link>
                 </Td>
+                <Td className="text-xs text-nevoa">{e.dataEvento ? new Date(e.dataEvento).toLocaleDateString('pt-BR') : '—'}</Td>
                 <Td>{e.depositoOrigem.nome}</Td>
                 <Td>{e.criadoPorUsuario.nome}</Td>
                 <Td className="text-xs text-nevoa">{new Date(e.criadoEm).toLocaleString('pt-BR')}</Td>
@@ -129,7 +134,10 @@ export function FeirasPage() {
                 <Link to={`/feiras/${e.id}`} className="truncate text-sm font-medium text-latao-escuro hover:underline">
                   {e.titulo}
                 </Link>
-                <div className="truncate text-xs text-nevoa">{e.depositoOrigem.nome}</div>
+                <div className="truncate text-xs text-nevoa">
+                  {e.depositoOrigem.nome}
+                  {e.dataEvento && ` · ${new Date(e.dataEvento).toLocaleDateString('pt-BR')}`}
+                </div>
               </div>
               <Badge tom={e.status}>{e.status}</Badge>
             </div>

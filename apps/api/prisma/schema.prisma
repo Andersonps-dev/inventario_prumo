@@ -260,6 +260,7 @@ model EventoVenda {
   empresaId           Int               @map("empresa_id")
   empresa             Empresa           @relation(fields: [empresaId], references: [id])
   titulo              String
+  dataEvento          DateTime?         @map("data_evento") @db.Date
   depositoOrigemId    Int               @map("deposito_origem_id")
   depositoOrigem      Deposito          @relation("EventoDepositoOrigem", fields: [depositoOrigemId], references: [id])
   depositoVirtualId   Int               @map("deposito_virtual_id")

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PapeisGuard } from '../common/guards/papeis.guard';
 import { EmpresaScopeGuard } from '../common/guards/empresa-scope.guard';
@@ -6,7 +6,7 @@ import { Papeis } from '../common/decorators/papeis.decorator';
 import { UsuarioAtual, UsuarioAutenticado } from '../common/decorators/usuario-atual.decorator';
 import { EmpresaAtual } from '../common/decorators/empresa-atual.decorator';
 import { EventosVendaService } from './eventos-venda.service';
-import { AdicionarItensEventoDto, CriarEventoVendaDto, RegistrarRetornoDto } from './dto/evento-venda.dto';
+import { AdicionarItensEventoDto, AtualizarEventoVendaDto, CriarEventoVendaDto, RegistrarRetornoDto } from './dto/evento-venda.dto';
 
 @UseGuards(JwtAuthGuard, EmpresaScopeGuard, PapeisGuard)
 @Controller('eventos-venda')
@@ -27,6 +27,17 @@ export class EventosVendaController {
   @Post()
   criar(@Body() dto: CriarEventoVendaDto, @UsuarioAtual() usuario: UsuarioAutenticado, @EmpresaAtual() empresaId: number) {
     return this.eventosVendaService.criar(dto, usuario.id, empresaId);
+  }
+
+  @Papeis('SUPERVISOR', 'ADMIN')
+  @Patch(':id')
+  atualizar(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: AtualizarEventoVendaDto,
+    @UsuarioAtual() usuario: UsuarioAutenticado,
+    @EmpresaAtual() empresaId: number,
+  ) {
+    return this.eventosVendaService.atualizar(id, dto, usuario.id, empresaId);
   }
 
   @Papeis('SUPERVISOR', 'ADMIN')

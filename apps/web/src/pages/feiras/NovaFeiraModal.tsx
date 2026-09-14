@@ -21,6 +21,7 @@ export function NovaFeiraModal({ onClose }: { onClose: () => void }) {
   const criar = useCriarEventoVenda();
   const { data: depositos } = useDepositos({ ativo: true });
   const [titulo, setTitulo] = useState('');
+  const [dataEvento, setDataEvento] = useState('');
   const [depositoOrigemId, setDepositoOrigemId] = useState<number | ''>('');
   const { data: posicao } = usePosicaoEstoque(depositoOrigemId || undefined);
   const [itemEscolhidoId, setItemEscolhidoId] = useState('');
@@ -69,6 +70,7 @@ export function NovaFeiraModal({ onClose }: { onClose: () => void }) {
     try {
       const evento = await criar.mutateAsync({
         titulo: titulo.trim(),
+        dataEvento: dataEvento || undefined,
         depositoOrigemId,
         itens: carrinho.map((c) => ({ produtoId: c.produtoId, enderecoId: c.enderecoId, quantidade: Number(c.quantidade) })),
       });
@@ -84,6 +86,10 @@ export function NovaFeiraModal({ onClose }: { onClose: () => void }) {
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <Field label="Título">
           <Input required placeholder="Feira de Setembro, Bazar da praça…" value={titulo} onChange={(e) => setTitulo(e.target.value)} />
+        </Field>
+
+        <Field label="Data da feira (opcional)">
+          <Input type="date" value={dataEvento} onChange={(e) => setDataEvento(e.target.value)} className="w-full sm:w-48" />
         </Field>
 
         <Field label="Depósito de origem">
