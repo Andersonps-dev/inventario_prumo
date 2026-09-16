@@ -13,7 +13,7 @@ services:
       - postgres
     restart: unless-stopped
     networks:
-      - prumo-net
+      - invexa-net
 
   web:
     build:
@@ -21,7 +21,7 @@ services:
       dockerfile: apps/web/Dockerfile
     restart: unless-stopped
     networks:
-      - prumo-net
+      - invexa-net
 
   postgres:
     image: postgres:16-alpine
@@ -33,15 +33,18 @@ services:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
     networks:
-      - prumo-net
+      - invexa-net
     # Sem "ports:" publicado no host — só acessível de dentro da rede docker
     # (api/web), diferente de um Postgres de dev exposto na máquina local.
 
 networks:
   # external — o Nginx compartilhado do host (do outro projeto) entra nesta
   # rede também, pra conseguir alcançar "api"/"web" pelo nome do serviço.
-  prumo-net:
-    name: prumo-net
+  # Renomeada de prumo-net — o compose do quitei que entra aqui por nome
+  # precisa ser atualizado no mesmo deploy, senão o proxy dele para de achar
+  # os containers (ver checklist de deploy).
+  invexa-net:
+    name: invexa-net
 
 volumes:
   postgres_data:
