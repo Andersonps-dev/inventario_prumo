@@ -1,3 +1,11 @@
+# Nome do projeto Compose fixado em "prumo" de propósito — os containers,
+# rede e (principalmente) o volume postgres_data já existentes em produção
+# foram criados sob esse nome. Sem isso, rodar `docker compose up` de dentro
+# de /opt/invexa (diretório renomeado no servidor) faria o Compose derivar
+# o nome do projeto do diretório ("invexa") e criar um stack paralelo do
+# zero — containers novos e um banco vazio — em vez de atualizar o real.
+name: prumo
+
 services:
   api:
     build:
