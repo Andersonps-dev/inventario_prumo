@@ -39,8 +39,8 @@ export function FeirasPage() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-aco">Feiras</h1>
-          <p className="text-sm text-nevoa">
+          <h1 className="text-xl font-semibold text-ink">Feiras</h1>
+          <p className="text-sm text-muted">
             Leve itens do estoque pra vender fora — o saldo continua existindo, só muda de lugar. O que não voltar vira relatório de venda.
           </p>
         </div>
@@ -94,20 +94,20 @@ export function FeirasPage() {
           <tbody>
             {isLoading && (
               <tr>
-                <Td className="text-nevoa">Carregando…</Td>
+                <Td className="text-muted">Carregando…</Td>
               </tr>
             )}
             {eventosOrdenados?.map((e) => (
               <tr key={e.id}>
                 <Td>
-                  <Link to={`/feiras/${e.id}`} className="text-latao-escuro hover:underline">
+                  <Link to={`/feiras/${e.id}`} className="text-primary hover:underline">
                     {e.titulo}
                   </Link>
                 </Td>
-                <Td className="text-xs text-nevoa">{e.dataEvento ? new Date(e.dataEvento).toLocaleDateString('pt-BR') : '—'}</Td>
+                <Td className="text-xs text-muted">{e.dataEvento ? new Date(e.dataEvento).toLocaleDateString('pt-BR') : '—'}</Td>
                 <Td>{e.depositoOrigem.nome}</Td>
                 <Td>{e.criadoPorUsuario.nome}</Td>
-                <Td className="text-xs text-nevoa">{new Date(e.criadoEm).toLocaleString('pt-BR')}</Td>
+                <Td className="text-xs text-muted">{new Date(e.criadoEm).toLocaleString('pt-BR')}</Td>
                 <Td>
                   <Badge tom={e.status}>{e.status}</Badge>
                 </Td>
@@ -117,7 +117,7 @@ export function FeirasPage() {
             ))}
             {eventosOrdenados && eventosOrdenados.length === 0 && (
               <tr>
-                <Td className="text-nevoa">Nenhuma feira encontrada.</Td>
+                <Td className="text-muted">Nenhuma feira encontrada.</Td>
               </tr>
             )}
           </tbody>
@@ -126,15 +126,15 @@ export function FeirasPage() {
 
       {/* Celular: cards empilhados — status e valor (o que mais importa numa lista de feiras) sempre visíveis sem rolar. */}
       <div className="flex flex-col gap-2 md:hidden">
-        {isLoading && <div className="text-sm text-nevoa">Carregando…</div>}
+        {isLoading && <div className="text-sm text-muted">Carregando…</div>}
         {eventosOrdenados?.map((e) => (
           <Card key={e.id} padding="p-3">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <Link to={`/feiras/${e.id}`} className="truncate text-sm font-medium text-latao-escuro hover:underline">
+                <Link to={`/feiras/${e.id}`} className="truncate text-sm font-medium text-primary hover:underline">
                   {e.titulo}
                 </Link>
-                <div className="truncate text-xs text-nevoa">
+                <div className="truncate text-xs text-muted">
                   {e.depositoOrigem.nome}
                   {e.dataEvento && ` · ${new Date(e.dataEvento).toLocaleDateString('pt-BR')}`}
                 </div>
@@ -142,23 +142,23 @@ export function FeirasPage() {
               <Badge tom={e.status}>{e.status}</Badge>
             </div>
             <div className="mt-2.5 grid grid-cols-2 gap-2 text-center">
-              <div className="rounded-md bg-concreto py-1.5">
-                <div className="text-[10px] uppercase tracking-wide text-nevoa">Qtde. vendida</div>
-                <div className="text-sm font-semibold text-aco">{e.relatorioFechamento ? e.relatorioFechamento.quantidadeTotal : '—'}</div>
+              <div className="rounded-md bg-surface py-1.5">
+                <div className="text-[10px] uppercase tracking-wide text-muted">Qtde. vendida</div>
+                <div className="text-sm font-semibold text-ink">{e.relatorioFechamento ? e.relatorioFechamento.quantidadeTotal : '—'}</div>
               </div>
-              <div className="rounded-md bg-concreto py-1.5">
-                <div className="text-[10px] uppercase tracking-wide text-nevoa">Valor vendido</div>
-                <div className="text-sm font-semibold text-aco">
+              <div className="rounded-md bg-surface py-1.5">
+                <div className="text-[10px] uppercase tracking-wide text-muted">Valor vendido</div>
+                <div className="text-sm font-semibold text-ink">
                   {e.relatorioFechamento ? moeda(e.relatorioFechamento.valorTotal) : '—'}
                 </div>
               </div>
             </div>
-            <div className="mt-2 text-xs text-nevoa">
+            <div className="mt-2 text-xs text-muted">
               {e.criadoPorUsuario.nome} · {new Date(e.criadoEm).toLocaleString('pt-BR')}
             </div>
           </Card>
         ))}
-        {eventosOrdenados && eventosOrdenados.length === 0 && <div className="p-3 text-sm text-nevoa">Nenhuma feira encontrada.</div>}
+        {eventosOrdenados && eventosOrdenados.length === 0 && <div className="p-3 text-sm text-muted">Nenhuma feira encontrada.</div>}
       </div>
 
       {criando && <NovaFeiraModal onClose={() => setCriando(false)} />}

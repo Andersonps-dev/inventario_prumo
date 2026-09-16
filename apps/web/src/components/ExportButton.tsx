@@ -48,7 +48,7 @@ export function ExportButton({
         {estado === 'gerando' ? 'Gerando…' : estado === 'baixando' ? 'Baixando…' : rotulo}
       </Button>
       {aberto && (
-        <div className="absolute right-0 z-10 mt-1 w-32 rounded-md border border-nevoa/30 bg-white py-1 shadow-lg">
+        <div className="absolute right-0 z-10 mt-1 w-32 rounded-card border border-stroke bg-card py-1 shadow-lg">
           {FORMATOS.map((f) => (
             <button
               key={f}
@@ -57,14 +57,14 @@ export function ExportButton({
                 window.clearTimeout(fecharTimeout.current);
                 exportar(f);
               }}
-              className="block w-full px-3 py-1.5 text-left text-sm text-aco hover:bg-concreto"
+              className="block w-full px-3 py-1.5 text-left text-sm text-ink hover:bg-surface"
             >
               {f}
             </button>
           ))}
         </div>
       )}
-      {erro && <div className="absolute right-0 top-full mt-1 w-48 text-xs text-divergente">{erro}</div>}
+      {erro && <div className="absolute right-0 top-full mt-1 w-48 text-xs text-danger">{erro}</div>}
     </div>
   );
 }

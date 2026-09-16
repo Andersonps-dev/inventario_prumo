@@ -84,14 +84,14 @@ export function UsuarioFormModal({ usuario, onClose }: { usuario: UsuarioAdmin |
         </Field>
 
         {usuario && (
-          <label className="flex items-center gap-2 text-sm text-aco">
+          <label className="flex items-center gap-2 text-sm text-ink">
             <input type="checkbox" checked={form.ativo} onChange={(e) => setForm({ ...form, ativo: e.target.checked })} />
             Usuário ativo
-            {!form.ativo && <span className="text-xs text-nevoa">— inativo não consegue mais entrar no sistema</span>}
+            {!form.ativo && <span className="text-xs text-muted">— inativo não consegue mais entrar no sistema</span>}
           </label>
         )}
 
-        {erro && <div className="text-sm text-divergente">{erro}</div>}
+        {erro && <div className="text-sm text-danger">{erro}</div>}
 
         <div className="mt-2 flex justify-end gap-2">
           <Button type="button" onClick={onClose}>

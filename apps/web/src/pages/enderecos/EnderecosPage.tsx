@@ -73,7 +73,7 @@ export function EnderecosPage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-xl font-semibold text-aco">Endereços</h1>
+        <h1 className="text-xl font-semibold text-ink">Endereços</h1>
         <div className="flex flex-wrap gap-2">
           <Link to="/enderecos/etiquetas">
             <Button>Etiquetas</Button>
@@ -103,7 +103,7 @@ export function EnderecosPage() {
         </Select>
       </div>
 
-      {erro && <div className="text-sm text-divergente">{erro}</div>}
+      {erro && <div className="text-sm text-danger">{erro}</div>}
 
       {/* Desktop/tablet: tabela completa. */}
       <div className="hidden md:block">
@@ -140,7 +140,7 @@ export function EnderecosPage() {
           <tbody>
             {isLoading && (
               <tr>
-                <Td className="text-nevoa">Carregando…</Td>
+                <Td className="text-muted">Carregando…</Td>
               </tr>
             )}
             {enderecosOrdenados?.map((e) => (
@@ -172,7 +172,7 @@ export function EnderecosPage() {
             ))}
             {enderecos && enderecos.length === 0 && (
               <tr>
-                <Td className="text-nevoa">Nenhum endereço encontrado.</Td>
+                <Td className="text-muted">Nenhum endereço encontrado.</Td>
               </tr>
             )}
           </tbody>
@@ -181,50 +181,50 @@ export function EnderecosPage() {
 
       {/* Celular: cards empilhados — sem rolagem lateral pra alcançar as ações. */}
       <div className="flex flex-col gap-2 md:hidden">
-        {isLoading && <div className="text-sm text-nevoa">Carregando…</div>}
+        {isLoading && <div className="text-sm text-muted">Carregando…</div>}
         {enderecosOrdenados?.map((e) => (
           <Card key={e.id} padding="p-3" className={!e.ativo ? 'opacity-50' : ''}>
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <div className="font-mono text-sm font-medium text-aco">{e.codigo}</div>
-                <div className="truncate text-xs text-nevoa">{e.deposito?.nome ?? '—'}</div>
+                <div className="font-mono text-sm font-medium text-ink">{e.codigo}</div>
+                <div className="truncate text-xs text-muted">{e.deposito?.nome ?? '—'}</div>
               </div>
-              <Badge tom={e.ativo ? 'conforme' : 'divergente'}>{e.ativo ? 'Ativo' : 'Inativo'}</Badge>
+              <div className="flex shrink-0 items-center gap-1">
+                <Badge tom={e.ativo ? 'conforme' : 'divergente'}>{e.ativo ? 'Ativo' : 'Inativo'}</Badge>
+                {podeGerenciar && (
+                  <RowActions>
+                    <RowAction onClick={() => setEditando(e)}>Editar</RowAction>
+                    <RowAction tom="perigo" onClick={() => alternarAtivo(e)}>
+                      {e.ativo ? 'Inativar' : 'Reativar'}
+                    </RowAction>
+                    <RowAction tom="perigo" onClick={() => setExcluindo(e)}>
+                      Excluir
+                    </RowAction>
+                  </RowActions>
+                )}
+              </div>
             </div>
             <div className="mt-2.5 grid grid-cols-4 gap-2 text-center">
-              <div className="rounded-md bg-concreto py-1.5">
-                <div className="text-[10px] uppercase tracking-wide text-nevoa">Setor</div>
-                <div className="text-sm font-semibold text-aco">{e.setor}</div>
+              <div className="rounded-md bg-surface py-1.5">
+                <div className="text-[10px] uppercase tracking-wide text-muted">Setor</div>
+                <div className="text-sm font-semibold text-ink">{e.setor}</div>
               </div>
-              <div className="rounded-md bg-concreto py-1.5">
-                <div className="text-[10px] uppercase tracking-wide text-nevoa">Rua</div>
-                <div className="text-sm font-semibold text-aco">{e.rua}</div>
+              <div className="rounded-md bg-surface py-1.5">
+                <div className="text-[10px] uppercase tracking-wide text-muted">Rua</div>
+                <div className="text-sm font-semibold text-ink">{e.rua}</div>
               </div>
-              <div className="rounded-md bg-concreto py-1.5">
-                <div className="text-[10px] uppercase tracking-wide text-nevoa">Módulo</div>
-                <div className="text-sm font-semibold text-aco">{e.modulo}</div>
+              <div className="rounded-md bg-surface py-1.5">
+                <div className="text-[10px] uppercase tracking-wide text-muted">Módulo</div>
+                <div className="text-sm font-semibold text-ink">{e.modulo}</div>
               </div>
-              <div className="rounded-md bg-concreto py-1.5">
-                <div className="text-[10px] uppercase tracking-wide text-nevoa">Nível</div>
-                <div className="text-sm font-semibold text-aco">{e.nivel}</div>
+              <div className="rounded-md bg-surface py-1.5">
+                <div className="text-[10px] uppercase tracking-wide text-muted">Nível</div>
+                <div className="text-sm font-semibold text-ink">{e.nivel}</div>
               </div>
             </div>
-            {podeGerenciar && (
-              <RowActions>
-                <RowAction className="mt-2" onClick={() => setEditando(e)}>
-                  Editar
-                </RowAction>
-                <RowAction tom="perigo" className="mt-2" onClick={() => alternarAtivo(e)}>
-                  {e.ativo ? 'Inativar' : 'Reativar'}
-                </RowAction>
-                <RowAction tom="perigo" className="mt-2" onClick={() => setExcluindo(e)}>
-                  Excluir
-                </RowAction>
-              </RowActions>
-            )}
           </Card>
         ))}
-        {enderecos && enderecos.length === 0 && <div className="p-3 text-sm text-nevoa">Nenhum endereço encontrado.</div>}
+        {enderecos && enderecos.length === 0 && <div className="p-3 text-sm text-muted">Nenhum endereço encontrado.</div>}
       </div>
 
       {editando && (

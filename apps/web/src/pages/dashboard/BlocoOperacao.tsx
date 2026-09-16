@@ -10,11 +10,11 @@ export function BlocoOperacao({ filtros }: { filtros: FiltrosDashboard }) {
   const navigate = useNavigate();
   const { data, isLoading } = useOperacao(filtros);
 
-  if (isLoading || !data) return <div className="text-nevoa">Carregando…</div>;
+  if (isLoading || !data) return <div className="text-muted">Carregando…</div>;
 
   return (
     <section className="flex flex-col gap-4">
-      <h2 className="text-lg font-semibold text-aco">Operação</h2>
+      <h2 className="text-lg font-semibold text-ink">Operação</h2>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatCard rotulo="Escopos abertos" valor={data.escoposAbertos.length} aoClicar={() => navigate('/escopos')} />
@@ -24,19 +24,19 @@ export function BlocoOperacao({ filtros }: { filtros: FiltrosDashboard }) {
       </div>
 
       <Card>
-        <div className="mb-2 text-sm font-semibold text-aco">Escopos abertos</div>
+        <div className="mb-2 text-sm font-semibold text-ink">Escopos abertos</div>
         {data.escoposAbertos.length === 0 ? (
-          <div className="text-sm text-nevoa">Nenhum escopo aberto no momento.</div>
+          <div className="text-sm text-muted">Nenhum escopo aberto no momento.</div>
         ) : (
           <div className="flex flex-col gap-3">
             {data.escoposAbertos.map((e) => (
               <button key={e.id} onClick={() => navigate(`/escopos/${e.id}`)} className="text-left">
-                <div className="mb-1 flex items-center justify-between gap-2 text-xs text-aco">
+                <div className="mb-1 flex items-center justify-between gap-2 text-xs text-ink">
                   <span className="min-w-0 flex-1 truncate">
                     <span className="font-mono">{e.codigo}</span> — {e.titulo}
                   </span>
                   <span
-                    className={`shrink-0 ${e.diasAtePrazo !== null && e.diasAtePrazo <= 2 ? 'text-divergente' : 'text-nevoa'}`}
+                    className={`shrink-0 ${e.diasAtePrazo !== null && e.diasAtePrazo <= 2 ? 'text-danger' : 'text-muted'}`}
                   >
                     {e.diasAtePrazo !== null ? `${e.diasAtePrazo}d até o prazo` : 'sem prazo'}
                   </span>
@@ -50,7 +50,7 @@ export function BlocoOperacao({ filtros }: { filtros: FiltrosDashboard }) {
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Card>
-          <div className="mb-2 text-sm font-semibold text-aco">Produtividade por operador</div>
+          <div className="mb-2 text-sm font-semibold text-ink">Produtividade por operador</div>
           <Table>
             <thead>
               <tr>
@@ -69,22 +69,22 @@ export function BlocoOperacao({ filtros }: { filtros: FiltrosDashboard }) {
               ))}
             </tbody>
           </Table>
-          <div className="mt-3 text-xs text-nevoa">
+          <div className="mt-3 text-xs text-muted">
             Tempo médio abertura → efetivação:{' '}
-            <span className="font-semibold text-aco">
+            <span className="font-semibold text-ink">
               {data.tempoMedioAberturaEfetivacaoHoras !== null ? `${data.tempoMedioAberturaEfetivacaoHoras.toFixed(1)}h` : '—'}
             </span>
           </div>
         </Card>
 
         <Card>
-          <div className="mb-2 text-sm font-semibold text-aco">Itens nunca inventariados</div>
+          <div className="mb-2 text-sm font-semibold text-ink">Itens nunca inventariados</div>
           {data.itensNuncaInventariados.length === 0 ? (
-            <div className="text-sm text-nevoa">Todo o catálogo já entrou em algum inventário.</div>
+            <div className="text-sm text-muted">Todo o catálogo já entrou em algum inventário.</div>
           ) : (
             <ul className="max-h-48 overflow-y-auto text-sm">
               {data.itensNuncaInventariados.map((p) => (
-                <li key={p.id} className="text-aco">
+                <li key={p.id} className="text-ink">
                   <span className="font-mono text-xs">{p.sku}</span> — {p.nome}
                 </li>
               ))}

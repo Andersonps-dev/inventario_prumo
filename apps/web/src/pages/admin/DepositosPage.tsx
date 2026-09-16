@@ -79,8 +79,8 @@ export function DepositosPage() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-xl font-semibold text-aco">Depósitos</h1>
-        <p className="text-sm text-nevoa">Endereços, escopos de inventário e movimentos pertencem a um depósito.</p>
+        <h1 className="text-xl font-semibold text-ink">Depósitos</h1>
+        <p className="text-sm text-muted">Endereços, escopos de inventário e movimentos pertencem a um depósito.</p>
       </div>
 
       <form onSubmit={onSubmit} className="flex flex-wrap gap-2">
@@ -90,7 +90,7 @@ export function DepositosPage() {
         </Button>
       </form>
 
-      {erro && <div className="text-sm text-divergente">{erro}</div>}
+      {erro && <div className="text-sm text-danger">{erro}</div>}
 
       <Select value={filtroSituacao} onChange={(e) => setFiltroSituacao(e.target.value)} className="w-48">
         <option value="">Todas as situações</option>
@@ -115,7 +115,7 @@ export function DepositosPage() {
           <tbody>
             {isLoading && (
               <tr>
-                <Td className="text-nevoa">Carregando…</Td>
+                <Td className="text-muted">Carregando…</Td>
               </tr>
             )}
             {depositosOrdenados?.map((d) => (
@@ -164,7 +164,7 @@ export function DepositosPage() {
             ))}
             {depositosOrdenados && depositosOrdenados.length === 0 && (
               <tr>
-                <Td className="text-nevoa">Nenhum depósito encontrado.</Td>
+                <Td className="text-muted">Nenhum depósito encontrado.</Td>
               </tr>
             )}
           </tbody>
@@ -173,7 +173,7 @@ export function DepositosPage() {
 
       {/* Celular: cards empilhados. */}
       <div className="flex flex-col gap-2 md:hidden">
-        {isLoading && <div className="text-sm text-nevoa">Carregando…</div>}
+        {isLoading && <div className="text-sm text-muted">Carregando…</div>}
         {depositosOrdenados?.map((d) => (
           <Card key={d.id} padding="p-3" className={!d.ativo ? 'opacity-50' : ''}>
             <div className="flex items-center justify-between gap-2">
@@ -189,34 +189,34 @@ export function DepositosPage() {
                   className="flex-1"
                 />
               ) : (
-                <span className="truncate text-sm font-medium text-aco">{d.nome}</span>
+                <span className="truncate text-sm font-medium text-ink">{d.nome}</span>
               )}
-              <Badge tom={d.ativo ? 'conforme' : 'divergente'}>{d.ativo ? 'Ativo' : 'Inativo'}</Badge>
+              <div className="flex shrink-0 items-center gap-1">
+                <Badge tom={d.ativo ? 'conforme' : 'divergente'}>{d.ativo ? 'Ativo' : 'Inativo'}</Badge>
+                <RowActions>
+                  {editandoId === d.id ? (
+                    <>
+                      <RowAction onClick={() => salvarEdicao(d.id)} disabled={atualizar.isPending}>
+                        Salvar
+                      </RowAction>
+                      <RowAction tom="neutro" onClick={() => setEditandoId(null)}>
+                        Cancelar
+                      </RowAction>
+                    </>
+                  ) : (
+                    <>
+                      <RowAction onClick={() => iniciarEdicao(d)}>Editar</RowAction>
+                      <RowAction tom="perigo" onClick={() => alternarAtivo(d)}>
+                        {d.ativo ? 'Inativar' : 'Reativar'}
+                      </RowAction>
+                    </>
+                  )}
+                </RowActions>
+              </div>
             </div>
-            <RowActions>
-              {editandoId === d.id ? (
-                <>
-                  <RowAction className="mt-2" onClick={() => salvarEdicao(d.id)} disabled={atualizar.isPending}>
-                    Salvar
-                  </RowAction>
-                  <RowAction tom="neutro" className="mt-2" onClick={() => setEditandoId(null)}>
-                    Cancelar
-                  </RowAction>
-                </>
-              ) : (
-                <>
-                  <RowAction className="mt-2" onClick={() => iniciarEdicao(d)}>
-                    Editar
-                  </RowAction>
-                  <RowAction tom="perigo" className="mt-2" onClick={() => alternarAtivo(d)}>
-                    {d.ativo ? 'Inativar' : 'Reativar'}
-                  </RowAction>
-                </>
-              )}
-            </RowActions>
           </Card>
         ))}
-        {depositosOrdenados && depositosOrdenados.length === 0 && <div className="p-3 text-sm text-nevoa">Nenhum depósito encontrado.</div>}
+        {depositosOrdenados && depositosOrdenados.length === 0 && <div className="p-3 text-sm text-muted">Nenhum depósito encontrado.</div>}
       </div>
 
       {inativando && (

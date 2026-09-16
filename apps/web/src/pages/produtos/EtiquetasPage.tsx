@@ -39,7 +39,7 @@ export function EtiquetasPage() {
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between print:hidden">
-        <h1 className="text-xl font-semibold text-aco">Etiquetas de código de barras</h1>
+        <h1 className="text-xl font-semibold text-ink">Etiquetas de código de barras</h1>
         <Button variante="primaria" disabled={etiquetas.length === 0} onClick={() => window.print()}>
           Imprimir {etiquetas.length > 0 ? `(${etiquetas.length})` : ''}
         </Button>
@@ -70,7 +70,7 @@ export function EtiquetasPage() {
                     min={0}
                     value={quantidades[p.id] ?? 0}
                     onChange={(e) => definirQuantidade(p.id, Number(e.target.value))}
-                    className="w-16 rounded-md border border-nevoa/50 px-2 py-1 text-sm"
+                    className="w-16 rounded-md border border-stroke/50 px-2 py-1 text-sm"
                   />
                 </Td>
               </tr>
@@ -84,19 +84,19 @@ export function EtiquetasPage() {
         {data?.itens.map((p) => (
           <Card key={p.id} padding="p-3" className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <div className="font-mono text-xs text-nevoa">{p.sku}</div>
-              <div className="truncate text-sm text-aco">{p.nome}</div>
+              <div className="font-mono text-xs text-muted">{p.sku}</div>
+              <div className="truncate text-sm text-ink">{p.nome}</div>
             </div>
             <input
               type="number"
               min={0}
               value={quantidades[p.id] ?? 0}
               onChange={(e) => definirQuantidade(p.id, Number(e.target.value))}
-              className="w-16 shrink-0 rounded-md border border-nevoa/50 px-2 py-1.5 text-sm"
+              className="w-16 shrink-0 rounded-md border border-stroke/50 px-2 py-1.5 text-sm"
             />
           </Card>
         ))}
-        {data && data.itens.length === 0 && <div className="p-3 text-sm text-nevoa">Nenhum produto encontrado.</div>}
+        {data && data.itens.length === 0 && <div className="p-3 text-sm text-muted">Nenhum produto encontrado.</div>}
       </div>
 
       {etiquetas.length > 0 && (

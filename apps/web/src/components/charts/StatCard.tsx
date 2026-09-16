@@ -11,16 +11,16 @@ export function StatCard({
   destaque?: 'positivo' | 'negativo' | 'neutro';
   aoClicar?: () => void;
 }) {
-  const cor = destaque === 'negativo' ? 'text-divergente' : destaque === 'positivo' ? 'text-conforme' : 'text-aco';
+  const cor = destaque === 'negativo' ? 'text-danger' : destaque === 'positivo' ? 'text-success' : 'text-ink';
   const Tag = aoClicar ? 'button' : 'div';
   return (
     <Card
       as={Tag}
       onClick={aoClicar}
       padding="p-3"
-      className={`text-left ${aoClicar ? 'cursor-pointer transition-colors hover:border-latao/50' : ''}`}
+      className={`text-left ${aoClicar ? 'cursor-pointer transition-colors hover:border-primary/50' : ''}`}
     >
-      <div className="text-xs text-nevoa">{rotulo}</div>
+      <div className="text-xs text-muted">{rotulo}</div>
       <div className={`text-lg font-semibold ${cor}`}>{valor}</div>
     </Card>
   );

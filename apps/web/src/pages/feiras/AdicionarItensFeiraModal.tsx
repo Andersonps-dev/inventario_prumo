@@ -78,7 +78,7 @@ export function AdicionarItensFeiraModal({
   return (
     <Modal title="Adicionar itens à feira" onClose={onClose} largura="max-w-2xl">
       <div className="flex flex-col gap-4">
-        <p className="text-xs text-nevoa">Escolha mais produtos do depósito de origem pra levar — o saldo sai de lá e entra na feira.</p>
+        <p className="text-xs text-muted">Escolha mais produtos do depósito de origem pra levar — o saldo sai de lá e entra na feira.</p>
 
         <Field label="Itens a levar (produto — posição)">
           <div className="flex flex-col gap-2 sm:flex-row">
@@ -111,24 +111,24 @@ export function AdicionarItensFeiraModal({
             </div>
           </div>
           {quantidadeInvalida && (
-            <div className="mt-1 text-xs text-divergente">Quantidade precisa ser maior que zero e não pode passar do disponível nessa posição.</div>
+            <div className="mt-1 text-xs text-danger">Quantidade precisa ser maior que zero e não pode passar do disponível nessa posição.</div>
           )}
         </Field>
 
         {carrinho.length > 0 && (
-          <div className="rounded-md border border-nevoa/30">
+          <div className="rounded-md border border-stroke/30">
             {carrinho.map((c) => (
               <div
                 key={`${c.produtoId}-${c.enderecoId}`}
-                className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-nevoa/10 px-3 py-2 text-sm last:border-0"
+                className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-stroke/10 px-3 py-2 text-sm last:border-0"
               >
-                <span className="font-mono text-xs text-nevoa">{c.sku}</span>
-                <span className="min-w-0 flex-1 truncate text-aco">{c.nome}</span>
-                <span className="font-mono text-xs text-latao-escuro">{c.posicao}</span>
-                <span className="font-semibold text-aco">{c.quantidade}</span>
+                <span className="font-mono text-xs text-muted">{c.sku}</span>
+                <span className="min-w-0 flex-1 truncate text-ink">{c.nome}</span>
+                <span className="font-mono text-xs text-warning">{c.posicao}</span>
+                <span className="font-semibold text-ink">{c.quantidade}</span>
                 <button
                   type="button"
-                  className="shrink-0 text-divergente hover:underline"
+                  className="shrink-0 text-danger hover:underline"
                   onClick={() => removerDoCarrinho(c.produtoId, c.enderecoId)}
                 >
                   Remover
@@ -138,7 +138,7 @@ export function AdicionarItensFeiraModal({
           </div>
         )}
 
-        {erro && <div className="text-sm text-divergente">{erro}</div>}
+        {erro && <div className="text-sm text-danger">{erro}</div>}
 
         <div className="mt-2 flex justify-end gap-2">
           <Button type="button" onClick={onClose}>

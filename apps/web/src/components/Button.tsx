@@ -8,12 +8,12 @@ const CLASSES: Record<Variante, string> = {
   // faz fundo E texto convergirem juntos pra cor da página por trás,
   // deixando o texto quase ilegível. Aqui só o fundo esmaece de verdade.
   primaria:
-    'bg-latao text-aco font-semibold shadow-[0_1px_2px_-1px_rgba(18,40,63,0.25),0_2px_4px_rgba(18,40,63,0.12)] hover:bg-latao-escuro hover:shadow-[0_2px_4px_-1px_rgba(18,40,63,0.3),0_4px_8px_rgba(18,40,63,0.14)] active:shadow-none disabled:bg-latao/40 disabled:text-aco/70',
+    'bg-primary text-white font-semibold shadow-sm shadow-primary/20 hover:bg-primary-hover hover:shadow-md hover:shadow-primary/25 disabled:bg-primary/40 disabled:shadow-none',
   secundaria:
-    'bg-white text-aco border border-aco/12 shadow-[0_1px_2px_rgba(18,40,63,0.04)] hover:bg-concreto hover:border-aco/18 active:shadow-none disabled:text-aco/40 disabled:border-aco/8',
+    'bg-card text-ink border border-stroke shadow-sm hover:border-primary/40 hover:bg-surface disabled:text-muted disabled:border-stroke/60 disabled:shadow-none',
   perigo:
-    'bg-divergente text-white font-semibold shadow-[0_1px_2px_-1px_rgba(179,64,47,0.35),0_2px_4px_rgba(179,64,47,0.16)] hover:bg-divergente/90 hover:shadow-[0_2px_4px_-1px_rgba(179,64,47,0.4),0_4px_8px_rgba(179,64,47,0.18)] active:shadow-none disabled:bg-divergente/40 disabled:text-white/90',
-  fantasma: 'bg-transparent text-aco hover:bg-aco/6 active:bg-aco/10 disabled:text-aco/40',
+    'bg-danger text-white font-semibold shadow-sm shadow-danger/20 hover:bg-danger/90 hover:shadow-md hover:shadow-danger/25 disabled:bg-danger/40 disabled:shadow-none',
+  fantasma: 'bg-transparent text-ink hover:bg-ink/5 active:bg-ink/10 disabled:text-muted',
 };
 
 export function Button({
@@ -27,7 +27,7 @@ export function Button({
   return (
     <button
       disabled={disabled || carregando}
-      className={`inline-flex min-h-9 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm transition-[background-color,box-shadow,transform] duration-150 ease-out active:scale-[0.97] disabled:cursor-not-allowed disabled:shadow-none disabled:active:scale-100 focus-visible:outline-none focus-visible:shadow-[0_0_0_3px_rgba(224,169,74,0.45)] ${CLASSES[variante]} ${className}`}
+      className={`inline-flex min-h-9 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm transition-all duration-150 ease-out active:scale-[0.98] disabled:cursor-not-allowed disabled:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/45 ${CLASSES[variante]} ${className}`}
       {...props}
     >
       {carregando && (

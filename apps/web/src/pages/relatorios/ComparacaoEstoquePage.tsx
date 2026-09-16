@@ -36,7 +36,7 @@ interface ResultadoComparacao {
 const ROTULO_STATUS: Record<StatusComparacao, string> = {
   OK: 'Bate certo',
   DIVERGENTE: 'Divergente',
-  NAO_ENCONTRADO_NO_SISTEMA: 'SKU não existe no Prumo',
+  NAO_ENCONTRADO_NO_SISTEMA: 'SKU não existe no Invexa',
   NAO_INFORMADO_PELO_CLIENTE: 'Não informado pelo cliente',
 };
 
@@ -49,7 +49,7 @@ const TOM_STATUS: Record<StatusComparacao, string> = {
 
 function exportarCsv(linhas: LinhaComparacao[]) {
   const BOM = '﻿';
-  const cabecalho = ['SKU', 'Produto', 'Estoque do cliente', 'Estoque Prumo', 'Diferença', 'Status'];
+  const cabecalho = ['SKU', 'Produto', 'Estoque do cliente', 'Estoque Invexa', 'Diferença', 'Status'];
   const GATILHOS_FORMULA = ['=', '+', '-', '@', '\t', '\r'];
   const escapar = (v: string) => {
     const seguro = v.length > 0 && GATILHOS_FORMULA.includes(v[0]) ? `'${v}` : v;
@@ -160,9 +160,9 @@ export function ComparacaoEstoquePage() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-xl font-semibold text-aco">Comparação de estoque</h1>
-        <p className="text-sm text-nevoa">
-          Envie a contagem do seu sistema externo e confira contra o Prumo — o Prumo é a referência (fazemos
+        <h1 className="text-xl font-semibold text-ink">Comparação de estoque</h1>
+        <p className="text-sm text-muted">
+          Envie a contagem do seu sistema externo e confira contra o Invexa — o Invexa é a referência (fazemos
           inventário nele), a diferença mostra o quanto ele tem a mais ou a menos em relação ao arquivo enviado.
         </p>
       </div>
@@ -206,14 +206,14 @@ export function ComparacaoEstoquePage() {
           </div>
         )}
 
-        {erro && <div className="text-sm text-divergente">{erro}</div>}
+        {erro && <div className="text-sm text-danger">{erro}</div>}
       </Card>
 
       {resultado && (
         <>
           {linhasComErro.length > 0 && (
-            <div className="flex flex-col gap-1 rounded-md border border-divergente/30 bg-divergente/5 p-3 text-xs">
-              <div className="font-semibold text-divergente">
+            <div className="flex flex-col gap-1 rounded-md border border-danger/30 bg-danger/5 p-3 text-xs">
+              <div className="font-semibold text-danger">
                 {linhasComErro.length} linha(s) do arquivo foram ignoradas por não terem SKU ou estoque válidos:
               </div>
               <div className="max-h-32 overflow-y-auto">
@@ -227,13 +227,13 @@ export function ComparacaoEstoquePage() {
           )}
 
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-wrap gap-3 text-xs text-nevoa">
+            <div className="flex flex-wrap gap-3 text-xs text-muted">
               <span>
-                <span className="font-semibold text-aco">{resultado.length}</span> linha(s)
+                <span className="font-semibold text-ink">{resultado.length}</span> linha(s)
               </span>
               <span>·</span>
               <span>
-                <span className={`font-semibold ${divergencias > 0 ? 'text-divergente' : 'text-conforme'}`}>{divergencias}</span> com
+                <span className={`font-semibold ${divergencias > 0 ? 'text-danger' : 'text-success'}`}>{divergencias}</span> com
                 divergência
               </span>
             </div>
@@ -242,7 +242,7 @@ export function ComparacaoEstoquePage() {
                 <option value="">Todos os status</option>
                 <option value="OK">Bate certo</option>
                 <option value="DIVERGENTE">Divergente</option>
-                <option value="NAO_ENCONTRADO_NO_SISTEMA">SKU não existe no Prumo</option>
+                <option value="NAO_ENCONTRADO_NO_SISTEMA">SKU não existe no Invexa</option>
                 <option value="NAO_INFORMADO_PELO_CLIENTE">Não informado pelo cliente</option>
               </Select>
               <Button onClick={() => exportarCsv(resultado)}>Exportar CSV</Button>
@@ -262,7 +262,7 @@ export function ComparacaoEstoquePage() {
                   Estoque do cliente
                 </Th>
                 <Th sortKey="estoquePrumo" ordenacao={ordenacao} onSort={alternar}>
-                  Estoque Prumo
+                  Estoque Invexa
                 </Th>
                 <Th sortKey="diferenca" ordenacao={ordenacao} onSort={alternar}>
                   Diferença
@@ -281,7 +281,7 @@ export function ComparacaoEstoquePage() {
                   <Td className="[font-variant-numeric:tabular-nums]">{l.estoquePrumo ?? '—'}</Td>
                   <Td
                     className={`[font-variant-numeric:tabular-nums] ${
-                      l.diferenca ? (l.diferenca > 0 ? 'font-semibold text-conforme' : 'font-semibold text-divergente') : ''
+                      l.diferenca ? (l.diferenca > 0 ? 'font-semibold text-success' : 'font-semibold text-danger') : ''
                     }`}
                   >
                     {l.diferenca !== null ? (l.diferenca > 0 ? `+${l.diferenca}` : l.diferenca) : '—'}
@@ -293,7 +293,7 @@ export function ComparacaoEstoquePage() {
               ))}
               {resultadoOrdenado && resultadoOrdenado.length === 0 && (
                 <tr>
-                  <Td className="text-nevoa">Nenhuma linha encontrada.</Td>
+                  <Td className="text-muted">Nenhuma linha encontrada.</Td>
                 </tr>
               )}
             </tbody>

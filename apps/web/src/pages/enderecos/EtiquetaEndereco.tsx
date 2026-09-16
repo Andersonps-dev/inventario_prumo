@@ -24,8 +24,8 @@ export function EtiquetaEndereco({ codigo, setor, rua, modulo, nivel, vao }: {
   }, [codigo]);
 
   return (
-    <div className="etiqueta flex flex-col items-center justify-center rounded-md border border-nevoa/30 bg-white p-2 text-center">
-      <div className="mb-1 text-[11px] font-medium text-aco">
+    <div className="etiqueta flex flex-col items-center justify-center rounded-md border border-stroke/30 bg-white p-2 text-center">
+      <div className="mb-1 text-[11px] font-medium text-ink">
         Setor {setor} · Rua {rua} · Mód {modulo} · Nív {nivel} · Vão {vao}
       </div>
       <svg ref={svgRef} />

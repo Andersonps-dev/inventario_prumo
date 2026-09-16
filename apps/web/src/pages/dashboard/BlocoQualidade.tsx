@@ -12,11 +12,11 @@ const pct = (n: number) => `${n.toFixed(1)}%`;
 export function BlocoQualidade({ filtros }: { filtros: FiltrosDashboard }) {
   const { data, isLoading } = useQualidadeInventario(filtros);
 
-  if (isLoading || !data) return <div className="text-nevoa">Carregando…</div>;
+  if (isLoading || !data) return <div className="text-muted">Carregando…</div>;
 
   return (
     <section className="flex flex-col gap-4">
-      <h2 className="text-lg font-semibold text-aco">Qualidade do inventário</h2>
+      <h2 className="text-lg font-semibold text-ink">Qualidade do inventário</h2>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatCard rotulo="Acuracidade por item" valor={pct(data.acuraciadePorItem)} destaque={data.acuraciadePorItem >= 95 ? 'positivo' : 'negativo'} />
@@ -34,7 +34,7 @@ export function BlocoQualidade({ filtros }: { filtros: FiltrosDashboard }) {
       </div>
 
       <Card>
-        <div className="mb-2 text-sm font-semibold text-aco">Evolução da acuracidade por inventário</div>
+        <div className="mb-2 text-sm font-semibold text-ink">Evolução da acuracidade por inventário</div>
         <LineChart
           rotulosEixoX={data.evolucaoAcuracidade.map((e) => e.codigo.replace('INV-', ''))}
           series={[
@@ -45,7 +45,7 @@ export function BlocoQualidade({ filtros }: { filtros: FiltrosDashboard }) {
       </Card>
 
       <Card>
-        <div className="mb-2 text-sm font-semibold text-aco">Divergência por responsável de contagem</div>
+        <div className="mb-2 text-sm font-semibold text-ink">Divergência por responsável de contagem</div>
         <Table>
           <thead>
             <tr>
@@ -68,7 +68,7 @@ export function BlocoQualidade({ filtros }: { filtros: FiltrosDashboard }) {
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Card>
-          <div className="mb-2 text-sm font-semibold text-aco">Top divergências — por valor</div>
+          <div className="mb-2 text-sm font-semibold text-ink">Top divergências — por valor</div>
           <Table>
             <thead>
               <tr>
@@ -83,7 +83,7 @@ export function BlocoQualidade({ filtros }: { filtros: FiltrosDashboard }) {
                 <tr key={i.itemId}>
                   <Td className="font-mono text-xs">{i.escopoCodigo}</Td>
                   <Td>{i.sku}</Td>
-                  <Td className={i.diferenca >= 0 ? 'text-conforme' : 'text-divergente'}>{i.diferenca}</Td>
+                  <Td className={i.diferenca >= 0 ? 'text-success' : 'text-danger'}>{i.diferenca}</Td>
                   <Td>{moeda(i.impactoReais)}</Td>
                 </tr>
               ))}
@@ -92,15 +92,15 @@ export function BlocoQualidade({ filtros }: { filtros: FiltrosDashboard }) {
         </Card>
 
         <Card>
-          <div className="mb-2 text-sm font-semibold text-aco">Reincidência (2+ inventários seguidos divergindo)</div>
+          <div className="mb-2 text-sm font-semibold text-ink">Reincidência (2+ inventários seguidos divergindo)</div>
           {data.reincidencia.length === 0 ? (
-            <div className="text-sm text-nevoa">Nenhum produto reincidente no período.</div>
+            <div className="text-sm text-muted">Nenhum produto reincidente no período.</div>
           ) : (
             <ul className="flex flex-col gap-1 text-sm">
               {data.reincidencia.map((r) => (
-                <li key={r.produtoId} className="text-aco">
+                <li key={r.produtoId} className="text-ink">
                   <span className="font-mono text-xs">{r.sku}</span> — {r.nome}{' '}
-                  <span className="text-divergente">({r.inventariosConsecutivosDivergentes}x)</span>
+                  <span className="text-danger">({r.inventariosConsecutivosDivergentes}x)</span>
                 </li>
               ))}
             </ul>

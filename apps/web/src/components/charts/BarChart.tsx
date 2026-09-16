@@ -55,15 +55,15 @@ export function BarChart({
           );
         })}
       </svg>
-      <div className="mt-1 flex text-xs text-nevoa">
+      <div className="mt-1 flex text-xs text-muted">
         {dados.map((d, i) => (
           <div
             key={d.rotulo}
             style={{ width: `${100 / dados.length}%` }}
-            className={`text-center ${emFoco === i ? 'font-semibold text-aco' : ''}`}
+            className={`text-center ${emFoco === i ? 'font-semibold text-ink' : ''}`}
           >
             {d.rotulo}
-            {d.detalhe && <div className="text-[10px] text-nevoa">{d.detalhe}</div>}
+            {d.detalhe && <div className="text-[10px] text-muted">{d.detalhe}</div>}
           </div>
         ))}
       </div>

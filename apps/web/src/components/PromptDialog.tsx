@@ -34,7 +34,7 @@ export function PromptDialog({
   return (
     <Modal title={titulo} onClose={onCancelar} largura="max-w-sm">
       <form onSubmit={onSubmit} className="flex flex-col gap-3">
-        <label className="flex flex-col gap-1.5 text-sm text-aco">
+        <label className="flex flex-col gap-1.5 text-sm text-ink">
           <span className="font-medium">{rotuloCampo}</span>
           <textarea
             autoFocus
@@ -44,7 +44,7 @@ export function PromptDialog({
             value={valor}
             onChange={(e) => setValor(e.target.value)}
             placeholder={placeholder}
-            className="resize-none rounded-md border border-aco/12 bg-concreto/50 px-3 py-2 text-sm text-aco outline-none transition-shadow focus:border-latao focus:bg-white focus:shadow-[0_0_0_3px_rgba(224,169,74,0.25)]"
+            className="resize-none rounded-md border border-stroke bg-surface px-3 py-2 text-sm text-ink outline-none transition-shadow focus:border-primary focus:bg-card focus:shadow-[0_0_0_3px_rgba(37,99,235,0.25)]"
           />
         </label>
 

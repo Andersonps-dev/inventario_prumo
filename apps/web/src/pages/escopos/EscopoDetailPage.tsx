@@ -49,7 +49,7 @@ export function EscopoDetailPage() {
   } | null>(null);
   const [enviandoMotivo, setEnviandoMotivo] = useState(false);
 
-  if (isLoading || !escopo) return <div className="text-nevoa">Carregando…</div>;
+  if (isLoading || !escopo) return <div className="text-muted">Carregando…</div>;
 
   const itensValidos = escopo.itens.filter((i) => i.status !== 'CANCELADO');
   const contados = itensValidos.filter((i) => i.status === 'CONTADO').length;
@@ -138,15 +138,15 @@ export function EscopoDetailPage() {
       <Card>
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <div className="font-mono text-sm text-nevoa">{escopo.codigo}</div>
-            <h1 className="truncate text-xl font-semibold text-aco">{escopo.titulo}</h1>
+            <div className="font-mono text-sm text-muted">{escopo.codigo}</div>
+            <h1 className="truncate text-xl font-semibold text-ink">{escopo.titulo}</h1>
           </div>
           <Badge tom={escopo.status}>{escopo.status}</Badge>
         </div>
 
         {escopo.status !== 'RASCUNHO' && escopo.status !== 'CANCELADO' && (
           <div className="mt-3">
-            <div className="mb-1 flex justify-between text-xs text-nevoa">
+            <div className="mb-1 flex justify-between text-xs text-muted">
               <span>
                 contados {contados}/{itensValidos.length} · divergentes {divergentes}
               </span>
@@ -156,8 +156,8 @@ export function EscopoDetailPage() {
           </div>
         )}
 
-        {erro && <div className="mt-3 text-sm text-divergente">{erro}</div>}
-        {aviso && <div className="mt-3 rounded-md bg-latao/10 p-2 text-sm text-latao-escuro">{aviso}</div>}
+        {erro && <div className="mt-3 text-sm text-danger">{erro}</div>}
+        {aviso && <div className="mt-3 rounded-md bg-warning/10 p-2 text-sm text-warning">{aviso}</div>}
       </Card>
 
       {/* No celular/coletor, o campo de bipagem vem logo em seguida — antes dos
@@ -176,7 +176,7 @@ export function EscopoDetailPage() {
       {/* Detalhes e ações de gestão: secundário no celular, mas continua logo
           após o cabeçalho no desktop (onde há espaço de sobra). */}
       <Card className="md:order-2">
-        <div className="text-sm text-nevoa">
+        <div className="text-sm text-muted">
           Depósito {escopo.deposito.nome} · Resp. {escopo.responsavel?.nome ?? '—'} ·{' '}
           Prazo {escopo.prazo ? new Date(escopo.prazo).toLocaleDateString('pt-BR') : '—'}
         </div>
@@ -228,7 +228,7 @@ export function EscopoDetailPage() {
                   key={f}
                   onClick={() => setFiltro(f)}
                   className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                    filtro === f ? 'bg-aco text-white' : 'border border-nevoa/30 bg-white text-aco'
+                    filtro === f ? 'bg-primary text-white' : 'border border-stroke bg-card text-ink'
                   }`}
                 >
                   {f === 'TODOS' ? 'Todos' : f === 'PENDENTES' ? 'Pendentes' : f === 'CONTADOS' ? 'Contados' : 'Divergentes'}
@@ -256,10 +256,10 @@ export function EscopoDetailPage() {
                     <tr key={item.id}>
                       <Td className="font-mono text-xs">{item.produto.sku}</Td>
                       <Td>{item.produto.nome}</Td>
-                      <Td className="font-mono text-xs text-nevoa">{item.endereco.interno ? '—' : item.endereco.codigo}</Td>
+                      <Td className="font-mono text-xs text-muted">{item.endereco.interno ? '—' : item.endereco.codigo}</Td>
                       <Td>{item.saldoCongelado}</Td>
                       <Td>{item.quantidadeFinal ?? '—'}</Td>
-                      <Td className={item.diferenca && Number(item.diferenca) !== 0 ? 'text-divergente font-semibold' : ''}>
+                      <Td className={item.diferenca && Number(item.diferenca) !== 0 ? 'text-danger font-semibold' : ''}>
                         {item.diferenca ?? '—'}
                       </Td>
                       <Td>
@@ -283,7 +283,7 @@ export function EscopoDetailPage() {
                   ))}
                   {itensFiltrados.length === 0 && (
                     <tr>
-                      <Td className="text-nevoa">Nenhum item neste filtro.</Td>
+                      <Td className="text-muted">Nenhum item neste filtro.</Td>
                     </tr>
                   )}
                 </tbody>
@@ -299,30 +299,30 @@ export function EscopoDetailPage() {
                   <Card key={item.id} padding="p-3">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <div className="font-mono text-xs text-nevoa">{item.produto.sku}</div>
-                        <div className="truncate text-sm font-medium text-aco">{item.produto.nome}</div>
+                        <div className="font-mono text-xs text-muted">{item.produto.sku}</div>
+                        <div className="truncate text-sm font-medium text-ink">{item.produto.nome}</div>
                         {!item.endereco.interno && (
-                          <div className="font-mono text-[11px] text-latao-escuro">{item.endereco.codigo}</div>
+                          <div className="font-mono text-[11px] text-warning">{item.endereco.codigo}</div>
                         )}
                       </div>
                       <Badge tom={item.status}>{item.status}</Badge>
                     </div>
                     <div className="mt-2.5 grid grid-cols-3 gap-2 text-center">
-                      <div className="rounded-md bg-concreto py-1.5">
-                        <div className="text-[10px] uppercase tracking-wide text-nevoa">Congelado</div>
-                        <div className="text-sm font-semibold text-aco [font-variant-numeric:tabular-nums]">{item.saldoCongelado}</div>
+                      <div className="rounded-md bg-surface py-1.5">
+                        <div className="text-[10px] uppercase tracking-wide text-muted">Congelado</div>
+                        <div className="text-sm font-semibold text-ink [font-variant-numeric:tabular-nums]">{item.saldoCongelado}</div>
                       </div>
-                      <div className="rounded-md bg-concreto py-1.5">
-                        <div className="text-[10px] uppercase tracking-wide text-nevoa">Contado</div>
-                        <div className="text-sm font-semibold text-aco [font-variant-numeric:tabular-nums]">
+                      <div className="rounded-md bg-surface py-1.5">
+                        <div className="text-[10px] uppercase tracking-wide text-muted">Contado</div>
+                        <div className="text-sm font-semibold text-ink [font-variant-numeric:tabular-nums]">
                           {item.quantidadeFinal ?? '—'}
                         </div>
                       </div>
-                      <div className="rounded-md bg-concreto py-1.5">
-                        <div className="text-[10px] uppercase tracking-wide text-nevoa">Diferença</div>
+                      <div className="rounded-md bg-surface py-1.5">
+                        <div className="text-[10px] uppercase tracking-wide text-muted">Diferença</div>
                         <div
                           className={`text-sm font-semibold [font-variant-numeric:tabular-nums] ${
-                            diferenca ? 'text-divergente' : 'text-aco'
+                            diferenca ? 'text-danger' : 'text-ink'
                           }`}
                         >
                           {item.diferenca ?? '—'}
@@ -344,7 +344,7 @@ export function EscopoDetailPage() {
                   </Card>
                 );
               })}
-              {itensFiltrados.length === 0 && <div className="p-3 text-sm text-nevoa">Nenhum item neste filtro.</div>}
+              {itensFiltrados.length === 0 && <div className="p-3 text-sm text-muted">Nenhum item neste filtro.</div>}
             </div>
           </div>
         )}

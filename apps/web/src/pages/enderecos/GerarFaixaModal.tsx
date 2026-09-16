@@ -81,7 +81,7 @@ export function GerarFaixaModal({ depositoId, onClose }: { depositoId: number; o
       <div className="flex flex-col gap-4">
         {!resultado && (
           <>
-            <p className="text-xs text-nevoa">
+            <p className="text-xs text-muted">
               Cada segmento pode ser um valor fixo ou uma faixa (início–fim, com passo). O código final combina os
               cinco segmentos: Setor-Rua-Módulo-Nível-Vão. Faixas numéricas preservam os zeros à esquerda do início;
               faixas de uma letra vão de A a Z.
@@ -91,7 +91,7 @@ export function GerarFaixaModal({ depositoId, onClose }: { depositoId: number; o
               {SEGMENTOS.map(({ chave, rotulo }) => {
                 const seg = form[chave];
                 return (
-                  <div key={chave} className="flex items-end gap-2 rounded-md border border-nevoa/20 p-2">
+                  <div key={chave} className="flex items-end gap-2 rounded-md border border-stroke/20 p-2">
                     <Field label={rotulo}>
                       <Select value={seg.tipo} onChange={(e) => alterarTipo(chave, e.target.value as TipoSegmentoFaixa)} className="w-28">
                         <option value="fixo">Fixo</option>
@@ -130,7 +130,7 @@ export function GerarFaixaModal({ depositoId, onClose }: { depositoId: number; o
               })}
             </div>
 
-            {erro && <div className="text-sm text-divergente">{erro}</div>}
+            {erro && <div className="text-sm text-danger">{erro}</div>}
 
             {!previa.data && (
               <div className="flex justify-end gap-2">
@@ -142,16 +142,16 @@ export function GerarFaixaModal({ depositoId, onClose }: { depositoId: number; o
             )}
 
             {previa.data && (
-              <div className="flex flex-col gap-3 rounded-md border border-nevoa/20 bg-concreto p-3">
-                <div className="text-sm text-aco">
+              <div className="flex flex-col gap-3 rounded-md border border-stroke/20 bg-surface p-3">
+                <div className="text-sm text-ink">
                   <span className="font-semibold">{previa.data.total}</span> endereço(s) no total ·{' '}
-                  <span className="font-semibold text-conforme">{previa.data.novos}</span> novo(s) ·{' '}
-                  <span className="font-semibold text-divergente">{previa.data.duplicados}</span> já existente(s)
+                  <span className="font-semibold text-success">{previa.data.novos}</span> novo(s) ·{' '}
+                  <span className="font-semibold text-danger">{previa.data.duplicados}</span> já existente(s)
                 </div>
                 {previa.data.amostra.length > 0 && (
                   <div className="flex flex-wrap gap-1.5">
                     {previa.data.amostra.map((c) => (
-                      <span key={c} className="rounded bg-white px-2 py-1 font-mono text-xs text-aco shadow-sm">
+                      <span key={c} className="rounded bg-card px-2 py-1 font-mono text-xs text-ink shadow-sm">
                         {c}
                       </span>
                     ))}
@@ -170,7 +170,7 @@ export function GerarFaixaModal({ depositoId, onClose }: { depositoId: number; o
 
         {resultado && (
           <div className="flex flex-col gap-3">
-            <div className="text-sm text-conforme">{resultado.criados} endereço(s) criado(s) com sucesso.</div>
+            <div className="text-sm text-success">{resultado.criados} endereço(s) criado(s) com sucesso.</div>
             <div className="flex justify-end gap-2">
               <Button variante="primaria" onClick={irParaEtiquetas}>
                 Imprimir etiquetas destes {resultado.criados}

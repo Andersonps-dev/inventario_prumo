@@ -43,7 +43,7 @@ const VALOR_NAO_MAPEADO = '__nao_mapeado__';
 // Casa coluna do arquivo com campo do sistema por padrões plausíveis, não só
 // nome idêntico — mesma ideia já usada em ComparacaoEstoquePage.tsx. "nome"
 // aceita "descricao" porque em muitos ERPs a coluna de descrição É o nome
-// do produto; o campo "descricao" do Prumo (texto extra opcional) só casa
+// do produto; o campo "descricao" do Invexa (texto extra opcional) só casa
 // com padrões mais específicos pra não competir pela mesma coluna.
 const PADROES_CAMPO: Record<string, string[]> = {
   sku: ['sku', 'codigo', 'referencia', 'cod'],
@@ -177,7 +177,7 @@ export function ImportarProdutosModal({ onClose }: { onClose: () => void }) {
     <Modal title="Importar produtos" onClose={onClose} largura="max-w-2xl">
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
-          <div className="text-xs text-nevoa">
+          <div className="text-xs text-muted">
             Passo {indicePasso + 1} de {PASSOS.length} — {PASSOS[indicePasso].rotulo}
           </div>
           <ProgressBar percentual={((indicePasso + 1) / PASSOS.length) * 100} />
@@ -185,9 +185,9 @@ export function ImportarProdutosModal({ onClose }: { onClose: () => void }) {
 
         {passo === 'arquivo' && (
           <>
-            <p className="text-xs text-nevoa">
+            <p className="text-xs text-muted">
               Envie um arquivo CSV ou Excel (.xlsx) do seu sistema — no próximo passo você escolhe qual coluna do seu
-              arquivo corresponde a cada campo do Prumo.
+              arquivo corresponde a cada campo do Invexa.
             </p>
             <FileDropZone
               accept=".csv,.xlsx,.xls"
@@ -196,21 +196,21 @@ export function ImportarProdutosModal({ onClose }: { onClose: () => void }) {
               onSelecionar={escolherArquivo}
               disabled={carregando}
             />
-            {carregando && <div className="text-sm text-nevoa">Lendo colunas do arquivo…</div>}
-            {erro && <div className="text-sm text-divergente">{erro}</div>}
+            {carregando && <div className="text-sm text-muted">Lendo colunas do arquivo…</div>}
+            {erro && <div className="text-sm text-danger">{erro}</div>}
           </>
         )}
 
         {passo === 'mapeamento' && colunasInfo && (
           <div className="flex flex-col gap-3">
-            <p className="text-xs text-nevoa">
+            <p className="text-xs text-muted">
               Escolha de qual coluna do seu arquivo vem cada campo. Campos não mapeados usam o valor padrão informado.
             </p>
             <div className="max-h-96 overflow-y-auto">
               <Table>
                 <thead>
                   <tr>
-                    <Th>Campo do Prumo</Th>
+                    <Th>Campo do Invexa</Th>
                     <Th>De: (coluna do seu arquivo)</Th>
                     <Th>Ou valor padrão</Th>
                   </tr>
@@ -222,7 +222,7 @@ export function ImportarProdutosModal({ onClose }: { onClose: () => void }) {
                       <tr key={campo.chave}>
                         <Td>
                           {campo.titulo}
-                          {campo.obrigatorio && <span className="text-divergente"> *</span>}
+                          {campo.obrigatorio && <span className="text-danger"> *</span>}
                         </Td>
                         <Td>
                           <Select value={atual.coluna ?? VALOR_NAO_MAPEADO} onChange={(e) => definirColuna(campo.chave, e.target.value)}>
@@ -250,7 +250,7 @@ export function ImportarProdutosModal({ onClose }: { onClose: () => void }) {
               </Table>
             </div>
 
-            {erro && <div className="text-sm text-divergente">{erro}</div>}
+            {erro && <div className="text-sm text-danger">{erro}</div>}
 
             <div className="flex justify-between gap-2">
               <Button onClick={() => escolherArquivo(null)}>Trocar arquivo</Button>
@@ -266,12 +266,12 @@ export function ImportarProdutosModal({ onClose }: { onClose: () => void }) {
 
         {passo === 'previa' && previa && (
           <div className="flex flex-col gap-3">
-            <div className="text-sm text-aco">
-              <span className="font-semibold text-conforme">{previa.validas.length}</span> linha(s) válida(s) ·{' '}
-              <span className="font-semibold text-divergente">{previa.comErro.length}</span> com erro
+            <div className="text-sm text-ink">
+              <span className="font-semibold text-success">{previa.validas.length}</span> linha(s) válida(s) ·{' '}
+              <span className="font-semibold text-danger">{previa.comErro.length}</span> com erro
             </div>
             {previa.comErro.length > 0 && (
-              <div className="max-h-48 overflow-y-auto rounded-md border border-divergente/30 bg-divergente/5 p-3 text-xs">
+              <div className="max-h-48 overflow-y-auto rounded-md border border-danger/30 bg-danger/5 p-3 text-xs">
                 {previa.comErro.map((linha) => (
                   <div key={linha.linha} className="mb-1">
                     <span className="font-semibold">Linha {linha.linha}</span> ({linha.sku || '—'}): {linha.erros.join(', ')}
@@ -279,7 +279,7 @@ export function ImportarProdutosModal({ onClose }: { onClose: () => void }) {
                 ))}
               </div>
             )}
-            {erro && <div className="text-sm text-divergente">{erro}</div>}
+            {erro && <div className="text-sm text-danger">{erro}</div>}
             <div className="flex justify-end gap-2">
               <Button onClick={() => setPasso('mapeamento')}>Voltar ao mapeamento</Button>
               <Button variante="primaria" disabled={previa.validas.length === 0 || carregando} onClick={confirmar}>
@@ -291,7 +291,7 @@ export function ImportarProdutosModal({ onClose }: { onClose: () => void }) {
 
         {passo === 'resultado' && resultado && (
           <div className="flex flex-col gap-3">
-            <div className="text-sm text-conforme">
+            <div className="text-sm text-success">
               {resultado.criados} produto(s) criado(s). {resultado.ignorados} ignorado(s) por erro.
             </div>
             <Button variante="primaria" onClick={onClose}>

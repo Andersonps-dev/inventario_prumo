@@ -46,7 +46,7 @@ export function MovimentoManualModal({ produtos, onClose }: { produtos: ProdutoO
   return (
     <Modal title="Movimento manual" onClose={onClose}>
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
-        <p className="text-xs text-nevoa">Exceção ao fluxo padrão de inventário. Motivo é obrigatório e fica marcado no kardex.</p>
+        <p className="text-xs text-muted">Exceção ao fluxo padrão de inventário. Motivo é obrigatório e fica marcado no kardex.</p>
 
         <Field label="Produto">
           <Select required value={produtoId} onChange={(e) => setProdutoId(e.target.value ? Number(e.target.value) : '')}>
@@ -104,7 +104,7 @@ export function MovimentoManualModal({ produtos, onClose }: { produtos: ProdutoO
           <Input required minLength={3} value={motivo} onChange={(e) => setMotivo(e.target.value)} />
         </Field>
 
-        {erro && <div className="text-sm text-divergente">{erro}</div>}
+        {erro && <div className="text-sm text-danger">{erro}</div>}
 
         <div className="mt-2 flex justify-end gap-2">
           <Button type="button" onClick={onClose}>

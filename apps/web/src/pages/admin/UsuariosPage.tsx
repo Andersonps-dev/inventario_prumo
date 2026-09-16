@@ -4,6 +4,8 @@ import { useAuth } from '../../app/AuthContext';
 import { Table, Th, Td } from '../../components/Table';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
+import { Card } from '../../components/Card';
+import { EmptyState } from '../../components/EmptyState';
 import { RowActions, RowAction } from '../../components/RowActions';
 import { Input, Select } from '../../components/Input';
 import { ApiError } from '../../api/client';
@@ -62,8 +64,8 @@ export function UsuariosPage() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-aco">Usuários</h1>
-          <p className="text-sm text-nevoa">
+          <h1 className="text-xl font-semibold text-ink">Usuários</h1>
+          <p className="text-sm text-muted">
             {modoGlobal ? 'Todas as empresas — entre numa empresa para criar usuários nela.' : 'Usuários com acesso a esta empresa.'}
           </p>
         </div>
@@ -74,7 +76,7 @@ export function UsuariosPage() {
         )}
       </div>
 
-      {erro && <div className="text-sm text-divergente">{erro}</div>}
+      {erro && <div className="text-sm text-danger">{erro}</div>}
 
       <div className="flex flex-wrap items-center gap-3">
         <Input placeholder="Buscar por nome ou email…" value={busca} onChange={(e) => setBusca(e.target.value)} className="w-64" />
@@ -92,63 +94,103 @@ export function UsuariosPage() {
         </Select>
       </div>
 
-      <Table>
-        <thead>
-          <tr>
-            <Th sortKey="nome" ordenacao={ordenacao} onSort={alternar}>
-              Nome
-            </Th>
-            <Th sortKey="email" ordenacao={ordenacao} onSort={alternar}>
-              Email
-            </Th>
-            <Th sortKey="papel" ordenacao={ordenacao} onSort={alternar}>
-              Papel
-            </Th>
-            {modoGlobal && (
-              <Th sortKey="empresa" ordenacao={ordenacao} onSort={alternar}>
-                Empresa
+      {/* Desktop/tablet: tabela completa. */}
+      <div className="hidden md:block">
+        <Table>
+          <thead>
+            <tr>
+              <Th sortKey="nome" ordenacao={ordenacao} onSort={alternar}>
+                Nome
               </Th>
+              <Th sortKey="email" ordenacao={ordenacao} onSort={alternar}>
+                Email
+              </Th>
+              <Th sortKey="papel" ordenacao={ordenacao} onSort={alternar}>
+                Papel
+              </Th>
+              {modoGlobal && (
+                <Th sortKey="empresa" ordenacao={ordenacao} onSort={alternar}>
+                  Empresa
+                </Th>
+              )}
+              <Th sortKey="ativo" ordenacao={ordenacao} onSort={alternar}>
+                Situação
+              </Th>
+              <Th></Th>
+            </tr>
+          </thead>
+          <tbody>
+            {isLoading && (
+              <tr>
+                <Td className="text-muted">Carregando…</Td>
+              </tr>
             )}
-            <Th sortKey="ativo" ordenacao={ordenacao} onSort={alternar}>
-              Situação
-            </Th>
-            <Th></Th>
-          </tr>
-        </thead>
-        <tbody>
-          {isLoading && (
-            <tr>
-              <Td className="text-nevoa">Carregando…</Td>
-            </tr>
-          )}
-          {usuariosOrdenados?.map((u) => (
-            <tr key={u.id} className={!u.ativo ? 'opacity-50' : ''}>
-              <Td>{u.nome}</Td>
-              <Td className="text-xs text-nevoa">{u.email}</Td>
-              <Td>{u.papel}</Td>
-              {modoGlobal && <Td>{u.empresa?.nome ?? '—'}</Td>}
-              <Td>
-                <Badge tom={u.ativo ? 'conforme' : 'divergente'}>{u.ativo ? 'Ativo' : 'Inativo'}</Badge>
-              </Td>
-              <Td>
-                {u.papel !== 'SUPER_ADMIN' && (
-                  <RowActions>
-                    <RowAction onClick={() => setEditando(u)}>Editar</RowAction>
-                    <RowAction tom="perigo" onClick={() => alternarAtivo(u)}>
-                      {u.ativo ? 'Inativar' : 'Reativar'}
-                    </RowAction>
-                  </RowActions>
-                )}
-              </Td>
-            </tr>
-          ))}
-          {usuariosOrdenados && usuariosOrdenados.length === 0 && (
-            <tr>
-              <Td className="text-nevoa">Nenhum usuário encontrado.</Td>
-            </tr>
-          )}
-        </tbody>
-      </Table>
+            {usuariosOrdenados?.map((u) => (
+              <tr key={u.id} className={!u.ativo ? 'opacity-50' : ''}>
+                <Td>{u.nome}</Td>
+                <Td className="text-xs text-muted">{u.email}</Td>
+                <Td>{u.papel}</Td>
+                {modoGlobal && <Td>{u.empresa?.nome ?? '—'}</Td>}
+                <Td>
+                  <Badge tom={u.ativo ? 'conforme' : 'divergente'}>{u.ativo ? 'Ativo' : 'Inativo'}</Badge>
+                </Td>
+                <Td>
+                  {u.papel !== 'SUPER_ADMIN' && (
+                    <RowActions>
+                      <RowAction onClick={() => setEditando(u)}>Editar</RowAction>
+                      <RowAction tom="perigo" onClick={() => alternarAtivo(u)}>
+                        {u.ativo ? 'Inativar' : 'Reativar'}
+                      </RowAction>
+                    </RowActions>
+                  )}
+                </Td>
+              </tr>
+            ))}
+            {usuariosOrdenados && usuariosOrdenados.length === 0 && (
+              <tr>
+                <Td className="text-muted">Nenhum usuário encontrado.</Td>
+              </tr>
+            )}
+          </tbody>
+        </Table>
+      </div>
+
+      {/* Celular: cards empilhados. */}
+      <div className="flex flex-col gap-2 md:hidden">
+        {isLoading && (
+          <div className="flex flex-col gap-2">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Card key={i} padding="p-3" className="h-20 animate-pulse" />
+            ))}
+          </div>
+        )}
+        {usuariosOrdenados?.map((u) => (
+          <Card key={u.id} padding="p-3" className={!u.ativo ? 'opacity-60' : ''}>
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className="truncate text-sm font-medium text-ink">{u.nome}</div>
+                <div className="truncate text-xs text-muted">{u.email}</div>
+              </div>
+              <Badge tom={u.ativo ? 'conforme' : 'divergente'}>{u.ativo ? 'Ativo' : 'Inativo'}</Badge>
+            </div>
+            <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted">
+                <span>{u.papel}</span>
+                {modoGlobal && <span>{u.empresa?.nome ?? 'Sem empresa'}</span>}
+              </div>
+              {u.papel !== 'SUPER_ADMIN' && (
+                <RowActions>
+                  <RowAction onClick={() => setEditando(u)}>Editar</RowAction>
+                  <RowAction tom="perigo" onClick={() => alternarAtivo(u)}>
+                    {u.ativo ? 'Inativar' : 'Reativar'}
+                  </RowAction>
+                </RowActions>
+              )}
+            </div>
+          </Card>
+        ))}
+        {usuariosOrdenados && usuariosOrdenados.length === 0 && <EmptyState mensagem="Nenhum usuário encontrado." />}
+      </div>
 
       {editando && <UsuarioFormModal usuario={editando === 'novo' ? null : editando} onClose={() => setEditando(null)} />}
 

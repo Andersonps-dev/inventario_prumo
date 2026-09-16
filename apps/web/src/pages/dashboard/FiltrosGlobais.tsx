@@ -28,7 +28,7 @@ export function FiltrosGlobais({ filtros, onChange }: { filtros: FiltrosDashboar
         <Input type="date" value={filtros.dataFim ?? ''} onChange={(e) => onChange({ ...filtros, dataFim: e.target.value || undefined })} />
       </Field>
       {(filtros.depositoId || filtros.dataInicio || filtros.dataFim) && (
-        <button className="text-xs text-latao-escuro hover:underline" onClick={() => onChange({})}>
+        <button className="text-xs text-primary hover:underline" onClick={() => onChange({})}>
           Limpar filtros
         </button>
       )}

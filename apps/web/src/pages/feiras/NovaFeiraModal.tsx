@@ -147,25 +147,25 @@ export function NovaFeiraModal({ onClose }: { onClose: () => void }) {
               </div>
             </div>
             {quantidadeInvalida && (
-              <div className="mt-1 text-xs text-divergente">Quantidade precisa ser maior que zero e não pode passar do disponível nessa posição.</div>
+              <div className="mt-1 text-xs text-danger">Quantidade precisa ser maior que zero e não pode passar do disponível nessa posição.</div>
             )}
           </Field>
         )}
 
         {carrinho.length > 0 && (
-          <div className="rounded-md border border-nevoa/30">
+          <div className="rounded-md border border-stroke/30">
             {carrinho.map((c) => (
               <div
                 key={`${c.produtoId}-${c.enderecoId}`}
-                className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-nevoa/10 px-3 py-2 text-sm last:border-0"
+                className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-stroke/10 px-3 py-2 text-sm last:border-0"
               >
-                <span className="font-mono text-xs text-nevoa">{c.sku}</span>
-                <span className="min-w-0 flex-1 truncate text-aco">{c.nome}</span>
-                <span className="font-mono text-xs text-latao-escuro">{c.posicao}</span>
-                <span className="font-semibold text-aco">{c.quantidade}</span>
+                <span className="font-mono text-xs text-muted">{c.sku}</span>
+                <span className="min-w-0 flex-1 truncate text-ink">{c.nome}</span>
+                <span className="font-mono text-xs text-warning">{c.posicao}</span>
+                <span className="font-semibold text-ink">{c.quantidade}</span>
                 <button
                   type="button"
-                  className="shrink-0 text-divergente hover:underline"
+                  className="shrink-0 text-danger hover:underline"
                   onClick={() => removerDoCarrinho(c.produtoId, c.enderecoId)}
                 >
                   Remover
@@ -175,7 +175,7 @@ export function NovaFeiraModal({ onClose }: { onClose: () => void }) {
           </div>
         )}
 
-        {erro && <div className="text-sm text-divergente">{erro}</div>}
+        {erro && <div className="text-sm text-danger">{erro}</div>}
 
         <div className="mt-2 flex justify-end gap-2">
           <Button type="button" onClick={onClose}>

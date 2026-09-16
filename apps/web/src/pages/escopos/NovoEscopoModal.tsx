@@ -194,7 +194,7 @@ export function NovoEscopoModal({ onClose }: { onClose: () => void }) {
         {tipoCriterio === 'LISTA_SKUS' && (
           <Field label="SKUs (separados por vírgula, espaço ou quebra de linha)">
             <textarea
-              className="rounded-md border border-nevoa/50 px-3 py-2 text-sm"
+              className="rounded-md border border-stroke/50 px-3 py-2 text-sm"
               rows={3}
               value={skusTexto}
               onChange={(e) => setSkusTexto(e.target.value)}
@@ -209,16 +209,16 @@ export function NovoEscopoModal({ onClose }: { onClose: () => void }) {
                 value={buscaProdutos}
                 onChange={(e) => setBuscaProdutos(e.target.value)}
               />
-              <div className="max-h-56 overflow-y-auto rounded-md border border-nevoa/30">
+              <div className="max-h-56 overflow-y-auto rounded-md border border-stroke/30">
                 {produtosBusca?.itens.map((p) => (
-                  <label key={p.id} className="flex items-center gap-2 border-b border-nevoa/10 px-3 py-2 text-sm last:border-0 hover:bg-concreto">
+                  <label key={p.id} className="flex items-center gap-2 border-b border-stroke/10 px-3 py-2 text-sm last:border-0 hover:bg-surface">
                     <input type="checkbox" checked={produtoIdsSelecionados.has(p.id)} onChange={() => alternarProduto(p.id)} />
-                    <span className="font-mono text-xs text-nevoa">{p.sku}</span>
-                    <span className="text-aco">{p.nome}</span>
+                    <span className="font-mono text-xs text-muted">{p.sku}</span>
+                    <span className="text-ink">{p.nome}</span>
                   </label>
                 ))}
                 {produtosBusca && produtosBusca.itens.length === 0 && (
-                  <div className="px-3 py-3 text-sm text-nevoa">
+                  <div className="px-3 py-3 text-sm text-muted">
                     {buscaProdutos ? 'Nenhum produto encontrado para essa busca.' : 'Nenhum produto encontrado.'}
                   </div>
                 )}
@@ -229,7 +229,7 @@ export function NovoEscopoModal({ onClose }: { onClose: () => void }) {
         {tipoCriterio === 'POR_ENDERECO' && (
           <Field label={`Endereços a contar${enderecoIds.size > 0 ? ` (${enderecoIds.size} selecionado(s))` : ''}`}>
             {!depositoId ? (
-              <div className="text-xs text-nevoa">Selecione um depósito primeiro.</div>
+              <div className="text-xs text-muted">Selecione um depósito primeiro.</div>
             ) : (
               <div className="flex flex-col gap-2">
                 <Input
@@ -273,29 +273,29 @@ export function NovoEscopoModal({ onClose }: { onClose: () => void }) {
                 </div>
 
                 <div className="flex items-center justify-between gap-2 text-xs">
-                  <span className="text-nevoa">
+                  <span className="text-muted">
                     {enderecosFiltrados.length} endereço(s){' '}
                     {filtroCodigo || filtroSetor || filtroRua || filtroModulo || filtroNivel ? 'no filtro' : 'no depósito'}
                   </span>
                   <div className="flex gap-3">
-                    <button type="button" className="text-latao-escuro hover:underline" onClick={selecionarTodosFiltrados}>
+                    <button type="button" className="text-primary hover:underline" onClick={selecionarTodosFiltrados}>
                       Selecionar todos
                     </button>
-                    <button type="button" className="text-nevoa hover:underline" onClick={limparSelecaoFiltrados}>
+                    <button type="button" className="text-muted hover:underline" onClick={limparSelecaoFiltrados}>
                       Limpar
                     </button>
                   </div>
                 </div>
 
-                <div className="max-h-56 overflow-y-auto rounded-md border border-nevoa/30">
+                <div className="max-h-56 overflow-y-auto rounded-md border border-stroke/30">
                   {enderecosFiltrados.map((e) => (
-                    <label key={e.id} className="flex items-center gap-2 border-b border-nevoa/10 px-3 py-2 text-sm last:border-0 hover:bg-concreto">
+                    <label key={e.id} className="flex items-center gap-2 border-b border-stroke/10 px-3 py-2 text-sm last:border-0 hover:bg-surface">
                       <input type="checkbox" checked={enderecoIds.has(e.id)} onChange={() => alternarEndereco(e.id)} />
-                      <span className="font-mono text-xs text-nevoa">{e.codigo}</span>
+                      <span className="font-mono text-xs text-muted">{e.codigo}</span>
                     </label>
                   ))}
                   {enderecosFiltrados.length === 0 && (
-                    <div className="px-3 py-3 text-sm text-nevoa">
+                    <div className="px-3 py-3 text-sm text-muted">
                       {enderecosDoDeposito && enderecosDoDeposito.length > 0
                         ? 'Nenhum endereço para esse filtro.'
                         : 'Nenhum endereço cadastrado neste depósito.'}
@@ -307,7 +307,7 @@ export function NovoEscopoModal({ onClose }: { onClose: () => void }) {
           </Field>
         )}
 
-        {erro && <div className="text-sm text-divergente">{erro}</div>}
+        {erro && <div className="text-sm text-danger">{erro}</div>}
 
         <div className="mt-2 flex justify-end gap-2">
           <Button type="button" onClick={onClose}>

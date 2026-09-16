@@ -24,7 +24,7 @@ export function LineChart({
 }) {
   const [pontoAtivo, setPontoAtivo] = useState<number | null>(null);
   const n = rotulosEixoX.length;
-  if (n === 0) return <div className="text-sm text-nevoa">Sem inventários efetivados no período.</div>;
+  if (n === 0) return <div className="text-sm text-muted">Sem inventários efetivados no período.</div>;
 
   const margem = 12;
   const largura = LARGURA_VIEWBOX - margem * 2;
@@ -56,7 +56,7 @@ export function LineChart({
                   cy={y(v)}
                   r={pontoAtivo === i ? 6 : 4}
                   fill={serie.cor}
-                  stroke="#fff"
+                  stroke="var(--x-card)"
                   strokeWidth={2}
                   onMouseEnter={() => setPontoAtivo(i)}
                   onMouseLeave={() => setPontoAtivo(null)}
@@ -66,9 +66,9 @@ export function LineChart({
           );
         })}
       </svg>
-      <div className="mt-1 flex justify-between text-[10px] text-nevoa">
+      <div className="mt-1 flex justify-between text-[10px] text-muted">
         {rotulosEixoX.map((r, i) => (
-          <span key={i} className={pontoAtivo === i ? 'font-semibold text-aco' : ''}>
+          <span key={i} className={pontoAtivo === i ? 'font-semibold text-ink' : ''}>
             {r}
           </span>
         ))}
@@ -77,7 +77,7 @@ export function LineChart({
         {series.map((s) => (
           <div key={s.nome} className="flex items-center gap-1.5">
             <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: s.cor }} />
-            <span className="text-aco">
+            <span className="text-ink">
               {s.nome}
               {pontoAtivo !== null && `: ${s.valores[pontoAtivo]?.toFixed(1)}%`}
             </span>

@@ -6,5 +6,5 @@ export function Card({
   padding = 'p-4',
   ...props
 }: HTMLAttributes<HTMLElement> & { padding?: string; as?: ElementType }) {
-  return <Tag className={`rounded-lg border border-nevoa/30 bg-white ${padding} ${className}`} {...props} />;
+  return <Tag className={`rounded-card border border-stroke bg-card ${padding} ${className}`} {...props} />;
 }

@@ -32,8 +32,8 @@ export function RelatorioInventarioPage() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-aco">Relatório de inventário</h1>
-          <p className="text-sm text-nevoa">Saldo em estoque × contagem × diferença, item a item, por data.</p>
+          <h1 className="text-xl font-semibold text-ink">Relatório de inventário</h1>
+          <p className="text-sm text-muted">Saldo em estoque × contagem × diferença, item a item, por data.</p>
         </div>
         <ExportButton tipo="relatorio_inventario" filtros={filtros} rotulo="Exportar relatório" />
       </div>
@@ -85,20 +85,20 @@ export function RelatorioInventarioPage() {
           <Input type="date" value={filtros.dataFim ?? ''} onChange={(e) => setFiltros({ ...filtros, dataFim: e.target.value || undefined })} />
         </Field>
         {(filtros.depositoId || filtros.escopoId || filtros.enderecoId || filtros.dataInicio || filtros.dataFim) && (
-          <button className="text-xs text-latao-escuro hover:underline" onClick={() => setFiltros({})}>
+          <button className="text-xs text-primary hover:underline" onClick={() => setFiltros({})}>
             Limpar filtros
           </button>
         )}
       </Card>
 
       {linhas && (
-        <div className="flex gap-3 text-xs text-nevoa">
+        <div className="flex gap-3 text-xs text-muted">
           <span>
-            <span className="font-semibold text-aco">{linhas.length}</span> linha(s)
+            <span className="font-semibold text-ink">{linhas.length}</span> linha(s)
           </span>
           <span>·</span>
           <span>
-            <span className={`font-semibold ${totalDivergencias > 0 ? 'text-divergente' : 'text-conforme'}`}>{totalDivergencias}</span> com
+            <span className={`font-semibold ${totalDivergencias > 0 ? 'text-danger' : 'text-success'}`}>{totalDivergencias}</span> com
             divergência
           </span>
         </div>
@@ -136,25 +136,25 @@ export function RelatorioInventarioPage() {
         <tbody>
           {isLoading && (
             <tr>
-              <Td className="text-nevoa">Carregando…</Td>
+              <Td className="text-muted">Carregando…</Td>
             </tr>
           )}
           {linhasOrdenadas?.map((l, i) => (
             <tr key={i}>
-              <Td className="whitespace-nowrap text-xs text-nevoa [font-variant-numeric:tabular-nums]">
+              <Td className="whitespace-nowrap text-xs text-muted [font-variant-numeric:tabular-nums]">
                 {new Date(l.data).toLocaleString('pt-BR')}
               </Td>
               <Td className="font-mono text-xs">{l.sku}</Td>
-              <Td className="font-mono text-xs text-nevoa">{l.codigoBarras ?? '—'}</Td>
+              <Td className="font-mono text-xs text-muted">{l.codigoBarras ?? '—'}</Td>
               <Td>{l.nome}</Td>
-              <Td className="font-mono text-xs text-nevoa">{l.enderecoCodigo}</Td>
+              <Td className="font-mono text-xs text-muted">{l.enderecoCodigo}</Td>
               <Td className="[font-variant-numeric:tabular-nums]">{l.saldoEstoque}</Td>
               <Td className="[font-variant-numeric:tabular-nums]">
                 {l.contagem !== null ? l.contagem : <Badge tom="PENDENTE">pendente</Badge>}
               </Td>
               <Td
                 className={`[font-variant-numeric:tabular-nums] ${
-                  l.diferenca ? (l.diferenca > 0 ? 'font-semibold text-conforme' : 'font-semibold text-divergente') : ''
+                  l.diferenca ? (l.diferenca > 0 ? 'font-semibold text-success' : 'font-semibold text-danger') : ''
                 }`}
               >
                 {l.diferenca !== null ? (l.diferenca > 0 ? `+${l.diferenca}` : l.diferenca) : '—'}
@@ -163,7 +163,7 @@ export function RelatorioInventarioPage() {
           ))}
           {linhasOrdenadas && linhasOrdenadas.length === 0 && (
             <tr>
-              <Td className="text-nevoa">Nenhuma contagem encontrada para os filtros selecionados.</Td>
+              <Td className="text-muted">Nenhuma contagem encontrada para os filtros selecionados.</Td>
             </tr>
           )}
         </tbody>

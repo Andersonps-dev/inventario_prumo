@@ -40,7 +40,7 @@ export function EditarFeiraModal({ evento, onClose }: { evento: EventoVenda; onC
           </div>
         </div>
 
-        {erro && <div className="text-sm text-divergente">{erro}</div>}
+        {erro && <div className="text-sm text-danger">{erro}</div>}
 
         <div className="mt-2 flex justify-end gap-2">
           <Button type="button" onClick={onClose}>

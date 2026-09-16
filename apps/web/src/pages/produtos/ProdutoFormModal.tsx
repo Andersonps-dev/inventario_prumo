@@ -114,19 +114,19 @@ export function ProdutoFormModal({ produto, onClose }: { produto: Produto | null
           />
         </Field>
 
-        {!produto && <div className="text-xs text-nevoa">Saldo: 0 — entra por inventário.</div>}
+        {!produto && <div className="text-xs text-muted">Saldo: 0 — entra por inventário.</div>}
 
         {produto && (
-          <label className="flex items-center gap-2 text-sm text-aco">
+          <label className="flex items-center gap-2 text-sm text-ink">
             <input type="checkbox" checked={form.ativo} onChange={(e) => setForm({ ...form, ativo: e.target.checked })} />
             Produto ativo
             {!form.ativo && (
-              <span className="text-xs text-nevoa">— inativo não entra em novos escopos, mas continua no histórico</span>
+              <span className="text-xs text-muted">— inativo não entra em novos escopos, mas continua no histórico</span>
             )}
           </label>
         )}
 
-        {erro && <div className="text-sm text-divergente">{erro}</div>}
+        {erro && <div className="text-sm text-danger">{erro}</div>}
 
         <div className="mt-2 flex justify-end gap-2">
           <Button type="button" onClick={onClose}>

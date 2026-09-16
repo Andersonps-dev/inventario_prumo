@@ -1,39 +1,42 @@
 // Paleta de gráficos do dashboard — instância validada da skill dataviz
-// (references/palette.md), light-mode apenas (o app ainda não tem tema
-// escuro). Categórico/ordinal/diverging ficam reservados para dados;
-// status (conforme/divergente) já usados no resto do app permanecem
-// fixos e nunca fazem esse papel.
+// (references/palette.md). Categórico/ordinal/diverging ficam reservados
+// para dados e são os mesmos tons em claro/escuro (já são saturados o
+// bastante pra não precisar variar); status (conforme/divergente) já
+// usados no resto do app permanecem fixos e nunca fazem esse papel.
 
 export const CATEGORICO = [
-  '#2a78d6', // 1 azul
+  '#2563eb', // 1 azul — primary da marca
   '#eb6834', // 2 laranja
   '#1baf7a', // 3 água
   '#eda100', // 4 amarelo
   '#e87ba4', // 5 magenta
   '#008300', // 6 verde
   '#4a3aa7', // 7 violeta
-  '#e34948', // 8 vermelho
+  '#dc2626', // 8 vermelho — mesmo tom do danger
 ] as const;
 
 // Rampa ordinal (um hue, degraus de claridade) para a Curva ABC — A é o
 // degrau mais escuro (mais concentração de valor), C o mais claro.
 export const ORDINAL_AZUL = {
-  A: '#184f95',
-  B: '#2a78d6',
-  C: '#86b6ef',
+  A: '#1d4ed8',
+  B: '#2563eb',
+  C: '#93c5fd',
 };
 
 // Par divergente (polo frio/quente) para valores positivo/negativo.
 export const DIVERGENTE = {
-  positivo: '#2a78d6', // sobra
-  negativo: '#e34948', // falta
-  neutro: '#f0efec',
+  positivo: '#2563eb', // sobra
+  negativo: '#dc2626', // falta
+  neutro: '#f1f5f9',
 };
 
+// Referenciam as CSS custom properties de theme/tokens.css (não as classes
+// Tailwind) — SVG aceita var() direto em fill/stroke, e assim o gráfico
+// acompanha a troca de tema sem precisar recalcular nada em JS.
 export const TINTA = {
-  primaria: '#12283f', // aço — ink do Prumo
-  secundaria: '#52514e',
-  muted: '#8fa6b8', // névoa
-  grade: '#e1e0d9',
-  eixo: '#c3c2b7',
+  primaria: 'var(--x-ink)',
+  secundaria: 'var(--x-ink)',
+  muted: 'var(--x-muted)',
+  grade: 'var(--x-stroke)',
+  eixo: 'var(--x-stroke)',
 };

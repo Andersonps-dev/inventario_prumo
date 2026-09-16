@@ -4,6 +4,13 @@ import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { App } from './app/App';
 import { AuthProvider } from './app/AuthContext';
+// Hospedada localmente (não via Google Fonts) — o app tem suporte offline
+// (service worker, fila de contagem), então a fonte não pode depender de
+// rede externa pra carregar.
+import '@fontsource/inter/400.css';
+import '@fontsource/inter/500.css';
+import '@fontsource/inter/600.css';
+import '@fontsource/inter/700.css';
 import './theme/tokens.css';
 
 const queryClient = new QueryClient({

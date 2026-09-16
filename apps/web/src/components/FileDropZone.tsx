@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { FileText, UploadCloud } from 'lucide-react';
 
 function formatarTamanho(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -65,31 +66,27 @@ export function FileDropZone({
         }}
         onDragLeave={() => setArrastando(false)}
         onDrop={aoSoltar}
-        className={`flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed px-4 py-6 text-center transition-colors ${
+        className={`flex cursor-pointer flex-col items-center gap-2 rounded-card border-2 border-dashed px-4 py-6 text-center transition-colors ${
           disabled
-            ? 'cursor-not-allowed border-nevoa/20 bg-concreto/50 text-nevoa'
+            ? 'cursor-not-allowed border-stroke bg-surface text-muted'
             : arrastando
-              ? 'border-latao bg-latao/10'
+              ? 'border-primary bg-primary/10'
               : arquivo
-                ? 'border-conforme/50 bg-conforme/5'
-                : 'border-nevoa/40 bg-concreto/50 hover:border-latao hover:bg-latao/5'
+                ? 'border-success/50 bg-success/5'
+                : 'border-stroke bg-surface hover:border-primary hover:bg-primary/5'
         }`}
       >
         {arquivo ? (
           <>
-            <span aria-hidden className="text-2xl">
-              📄
-            </span>
-            <div className="text-sm font-semibold text-aco">{arquivo.name}</div>
-            <div className="text-xs text-nevoa">{formatarTamanho(arquivo.size)} — clique ou arraste outro arquivo para trocar</div>
+            <FileText className="text-success" size={28} aria-hidden />
+            <div className="text-sm font-semibold text-ink">{arquivo.name}</div>
+            <div className="text-xs text-muted">{formatarTamanho(arquivo.size)} — clique ou arraste outro arquivo para trocar</div>
           </>
         ) : (
           <>
-            <span aria-hidden className="text-2xl">
-              📤
-            </span>
-            <div className="text-sm font-medium text-aco">Arraste um arquivo aqui ou clique para selecionar</div>
-            <div className="text-xs text-nevoa">{descricaoTipos}</div>
+            <UploadCloud className="text-muted" size={28} aria-hidden />
+            <div className="text-sm font-medium text-ink">Arraste um arquivo aqui ou clique para selecionar</div>
+            <div className="text-xs text-muted">{descricaoTipos}</div>
           </>
         )}
       </div>

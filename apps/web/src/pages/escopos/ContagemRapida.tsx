@@ -260,23 +260,23 @@ export function ContagemRapida({
   };
 
   return (
-    <div className="rounded-lg border border-latao/40 bg-latao/8 p-4 shadow-[0_1px_2px_rgba(18,40,63,0.06)] md:shadow-none">
+    <div className="rounded-card border border-primary/30 bg-primary/5 p-4 shadow-sm md:shadow-none">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-1.5">
-        <div className="text-sm font-semibold text-aco">Contagem rápida (leitor de código de barras)</div>
+        <div className="text-sm font-semibold text-ink">Contagem rápida (leitor de código de barras)</div>
         {offline && (
-          <span className="rounded-full bg-divergente/15 px-2 py-0.5 text-xs font-medium text-divergente">
+          <span className="rounded-full bg-danger/15 px-2 py-0.5 text-xs font-medium text-danger">
             Offline — contagens ficam salvas no aparelho
           </span>
         )}
         {!offline && pendentes > 0 && (
-          <span className="rounded-full bg-latao/20 px-2 py-0.5 text-xs font-medium text-latao-escuro">
+          <span className="rounded-full bg-warning/20 px-2 py-0.5 text-xs font-medium text-warning">
             Sincronizando {pendentes} pendente(s)…
           </span>
         )}
       </div>
 
       {avisoSincronizacao && (
-        <div className="mb-2 flex items-start justify-between gap-2 rounded-md border border-divergente/30 bg-divergente/5 p-2 text-xs text-divergente">
+        <div className="mb-2 flex items-start justify-between gap-2 rounded-md border border-danger/30 bg-danger/5 p-2 text-xs text-danger">
           <span>{avisoSincronizacao}</span>
           <button type="button" className="shrink-0 font-semibold hover:underline" onClick={() => setAvisoSincronizacao(null)}>
             Ok
@@ -295,7 +295,7 @@ export function ContagemRapida({
             placeholder="Bipe ou digite o endereço (ex.: EN-900-00-1-0)"
             value={codigoEndereco}
             onChange={(e) => setCodigoEndereco(e.target.value)}
-            className="min-w-0 flex-1 rounded-md border border-nevoa/50 px-3 py-3 text-base outline-none focus:border-latao focus:ring-1 focus:ring-latao md:py-2 md:text-sm"
+            className="min-w-0 flex-1 rounded-md border border-stroke px-3 py-3 text-base outline-none focus:border-primary focus:ring-1 focus:ring-primary md:py-2 md:text-sm"
           />
           <Button type="submit" variante="primaria" className="shrink-0">
             Ir
@@ -304,12 +304,12 @@ export function ContagemRapida({
       ) : (
         <>
           {enderecoAtual && (
-            <div className="mb-2 flex items-center justify-between gap-2 rounded-md bg-aco/5 px-3 py-1.5 text-sm">
-              <span className="text-aco">
+            <div className="mb-2 flex items-center justify-between gap-2 rounded-md bg-ink/5 px-3 py-1.5 text-sm">
+              <span className="text-ink">
                 Endereço atual: <span className="font-mono font-semibold">{enderecoAtual.codigo}</span>
               </span>
               {exigeSelecaoDeEndereco && (
-                <button type="button" className="text-latao-escuro hover:underline" onClick={trocarEndereco}>
+                <button type="button" className="text-primary hover:underline" onClick={trocarEndereco}>
                   Trocar
                 </button>
               )}
@@ -317,7 +317,7 @@ export function ContagemRapida({
           )}
           {itemAlvo ? (
             <form onSubmit={confirmar} className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-              <div className="text-sm text-aco">
+              <div className="text-sm text-ink">
                 <span className="font-mono font-semibold">{itemAlvo.produto.sku}</span> — {itemAlvo.produto.nome}
               </div>
               <div className="flex gap-2">
@@ -329,7 +329,7 @@ export function ContagemRapida({
                   placeholder="Quantidade"
                   value={quantidade}
                   onChange={(e) => setQuantidade(e.target.value)}
-                  className="w-full min-w-0 flex-1 rounded-md border border-nevoa/50 px-3 py-3 text-base outline-none focus:border-latao focus:ring-1 focus:ring-latao sm:w-32 sm:flex-none md:py-2 md:text-sm"
+                  className="w-full min-w-0 flex-1 rounded-md border border-stroke px-3 py-3 text-base outline-none focus:border-primary focus:ring-1 focus:ring-primary sm:w-32 sm:flex-none md:py-2 md:text-sm"
                 />
                 <Button type="submit" variante="primaria" disabled={registrar.isPending} className="flex-1 sm:flex-none">
                   Confirmar <span className="hidden sm:inline">(Enter)</span>
@@ -340,8 +340,8 @@ export function ContagemRapida({
               </div>
             </form>
           ) : produtoParaAdicionar && enderecoAtual ? (
-            <div className="flex flex-col gap-2 rounded-md border border-latao/50 bg-latao/10 p-3 text-sm">
-              <div className="text-aco">
+            <div className="flex flex-col gap-2 rounded-md border border-warning/50 bg-warning/10 p-3 text-sm">
+              <div className="text-ink">
                 <span className="font-mono font-semibold">{produtoParaAdicionar.sku}</span> — {produtoParaAdicionar.nome} não
                 consta no endereço <span className="font-mono font-semibold">{enderecoAtual.codigo}</span> no sistema.
               </div>
@@ -379,7 +379,7 @@ export function ContagemRapida({
                 placeholder="Bipe o código de barras ou digite o SKU e pressione Enter"
                 value={codigo}
                 onChange={(e) => setCodigo(e.target.value)}
-                className="min-w-0 flex-1 rounded-md border border-nevoa/50 px-3 py-3 text-base outline-none focus:border-latao focus:ring-1 focus:ring-latao md:py-2 md:text-sm"
+                className="min-w-0 flex-1 rounded-md border border-stroke px-3 py-3 text-base outline-none focus:border-primary focus:ring-1 focus:ring-primary md:py-2 md:text-sm"
               />
               <Button type="submit" variante="primaria" disabled={buscandoProduto} className="shrink-0">
                 {buscandoProduto ? 'Buscando…' : 'Buscar'}
@@ -388,7 +388,7 @@ export function ContagemRapida({
           )}
         </>
       )}
-      {erro && <div className="mt-2 text-sm text-divergente">{erro}</div>}
+      {erro && <div className="mt-2 text-sm text-danger">{erro}</div>}
     </div>
   );
 }

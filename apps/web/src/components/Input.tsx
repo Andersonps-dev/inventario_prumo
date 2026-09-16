@@ -1,9 +1,10 @@
 import { Children, isValidElement, useEffect, useMemo, useRef, useState } from 'react';
 import type { InputHTMLAttributes, KeyboardEvent, LabelHTMLAttributes, OptionHTMLAttributes, ReactNode } from 'react';
+import { ChevronDown } from 'lucide-react';
 
 export function Field({ label, children, ...props }: { label: string; children: React.ReactNode } & LabelHTMLAttributes<HTMLLabelElement>) {
   return (
-    <label className="flex flex-col gap-1 text-sm text-aco" {...props}>
+    <label className="flex flex-col gap-1 text-sm text-ink" {...props}>
       <span className="font-medium">{label}</span>
       {children}
     </label>
@@ -14,7 +15,7 @@ export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...props}
-      className={`rounded-md border border-nevoa/50 px-3 py-2 text-sm text-aco outline-none focus:border-latao focus:ring-1 focus:ring-latao ${props.className ?? ''}`}
+      className={`rounded-md border border-stroke bg-card px-3 py-2 text-sm text-ink outline-none focus:border-primary focus:ring-1 focus:ring-primary ${props.className ?? ''}`}
     />
   );
 }
@@ -169,9 +170,9 @@ export function Select({
         }}
         onKeyDown={aoTeclar}
         title={!aberto ? opcaoSelecionada?.rotulo : undefined}
-        className="w-full min-w-[9rem] truncate rounded-md border border-nevoa/50 bg-white py-2 pl-3 pr-6 text-sm text-aco outline-none focus:border-latao focus:ring-1 focus:ring-latao disabled:bg-concreto disabled:text-nevoa"
+        className="w-full min-w-[9rem] truncate rounded-md border border-stroke bg-card py-2 pl-3 pr-6 text-sm text-ink outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:bg-surface disabled:text-muted"
       />
-      <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-nevoa">▾</span>
+      <ChevronDown size={13} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-muted" />
       {aberto && (
         // Sem min-w-max de propósito: opção com texto longo ("SKU — Nome —
         // Posição (disp. X)") quebra em 2 linhas dentro da largura do
@@ -180,9 +181,9 @@ export function Select({
         // "sumiu" um valor) quando o modal ganhou overflow-x-hidden.
         <ul
           role="listbox"
-          className="absolute z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-md border border-nevoa/30 bg-white py-1 text-sm shadow-[0_8px_16px_-4px_rgba(18,40,63,0.18)]"
+          className="absolute z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-md border border-stroke bg-card py-1 text-sm shadow-lg"
         >
-          {opcoesFiltradas.length === 0 && <li className="px-3 py-1.5 text-nevoa">Nenhuma opção encontrada.</li>}
+          {opcoesFiltradas.length === 0 && <li className="px-3 py-1.5 text-muted">Nenhuma opção encontrada.</li>}
           {opcoesFiltradas.map((o, i) => (
             <li
               key={o.valor}
@@ -193,9 +194,9 @@ export function Select({
                 selecionar(o);
               }}
               onMouseEnter={() => setDestaque(i)}
-              className={`cursor-pointer px-3 py-1.5 leading-snug ${i === destaque ? 'bg-latao/15' : ''} ${o.valor === valorAtual ? 'font-semibold text-aco' : 'text-aco'}`}
+              className={`cursor-pointer px-3 py-1.5 leading-snug ${i === destaque ? 'bg-primary/10' : ''} ${o.valor === valorAtual ? 'font-semibold text-ink' : 'text-ink'}`}
             >
-              {o.rotulo || <span className="text-nevoa">—</span>}
+              {o.rotulo || <span className="text-muted">—</span>}
             </li>
           ))}
         </ul>

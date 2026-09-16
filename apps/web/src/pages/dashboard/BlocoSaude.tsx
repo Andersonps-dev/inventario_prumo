@@ -22,11 +22,11 @@ export function BlocoSaude({ filtros }: { filtros: FiltrosDashboard }) {
     enabled: mostrarSemMovimento,
   });
 
-  if (isLoading || !data) return <div className="text-nevoa">Carregando…</div>;
+  if (isLoading || !data) return <div className="text-muted">Carregando…</div>;
 
   return (
     <section className="flex flex-col gap-4">
-      <h2 className="text-lg font-semibold text-aco">Saúde do estoque</h2>
+      <h2 className="text-lg font-semibold text-ink">Saúde do estoque</h2>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
         <StatCard rotulo="Valor total a custo" valor={moeda(data.valorTotalCusto)} />
@@ -53,13 +53,13 @@ export function BlocoSaude({ filtros }: { filtros: FiltrosDashboard }) {
 
       {mostrarSemMovimento && semMovimento && (
         <Card padding="p-3" className="text-sm">
-          <div className="mb-2 font-medium text-aco">Capital parado — sem movimento há mais de 90 dias</div>
+          <div className="mb-2 font-medium text-ink">Capital parado — sem movimento há mais de 90 dias</div>
           {semMovimento.length === 0 ? (
-            <div className="text-nevoa">Nenhum produto nessa situação.</div>
+            <div className="text-muted">Nenhum produto nessa situação.</div>
           ) : (
             <ul className="flex flex-col gap-1">
               {semMovimento.map((p) => (
-                <li key={p.produto_id} className="text-aco">
+                <li key={p.produto_id} className="text-ink">
                   <span className="font-mono text-xs">{p.sku}</span> — {p.nome}
                 </li>
               ))}
@@ -70,7 +70,7 @@ export function BlocoSaude({ filtros }: { filtros: FiltrosDashboard }) {
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Card>
-          <div className="mb-2 text-sm font-semibold text-aco">Curva ABC por valor</div>
+          <div className="mb-2 text-sm font-semibold text-ink">Curva ABC por valor</div>
           <BarChart
             dados={data.curvaAbc.map((c) => ({
               rotulo: `Classe ${c.classe}`,
@@ -83,7 +83,7 @@ export function BlocoSaude({ filtros }: { filtros: FiltrosDashboard }) {
         </Card>
 
         <Card>
-          <div className="mb-2 text-sm font-semibold text-aco">Top 10 — valor imobilizado</div>
+          <div className="mb-2 text-sm font-semibold text-ink">Top 10 — valor imobilizado</div>
           <Table>
             <thead>
               <tr>

@@ -28,13 +28,14 @@ export function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-aco px-4">
-      <form onSubmit={onSubmit} className="w-full max-w-sm rounded-xl bg-white p-8 shadow-xl">
-        <div className="mb-6 text-center">
-          <div className="text-2xl font-bold text-aco">
-            Pr<span className="text-latao">u</span>mo
+    <div className="flex min-h-screen items-center justify-center bg-surface px-4">
+      <form onSubmit={onSubmit} className="w-full max-w-sm rounded-card border border-stroke bg-card p-8 shadow-xl">
+        <div className="mb-6 flex flex-col items-center text-center">
+          <img src="/favicon.png" alt="" className="mb-2 h-12 w-12 rounded-xl" />
+          <div className="text-2xl font-bold tracking-tight">
+            <span className="text-ink">In</span>
+            <span className="bg-gradient-to-r from-primary to-sky-400 bg-clip-text text-transparent">vexa</span>
           </div>
-          <div className="text-xs text-nevoa">inventário no prumo</div>
         </div>
 
         <div className="flex flex-col gap-4">
@@ -45,7 +46,7 @@ export function LoginPage() {
             <Input type="password" required value={senha} onChange={(e) => setSenha(e.target.value)} />
           </Field>
 
-          {erro && <div className="text-sm text-divergente">{erro}</div>}
+          {erro && <div className="text-sm text-danger">{erro}</div>}
 
           <Button type="submit" variante="primaria" disabled={carregando} className="mt-2 w-full">
             {carregando ? 'Entrando…' : 'Entrar'}

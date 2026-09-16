@@ -7,6 +7,7 @@ import { Badge } from '../../components/Badge';
 import { Field, Input, Select } from '../../components/Input';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
+import { EmptyState } from '../../components/EmptyState';
 import { useOrdenacao } from '../../app/useOrdenacao';
 
 const ACOES = ['CRIAR', 'EDITAR', 'CANCELAR', 'EFETIVAR', 'EXPORTAR', 'EXCLUIR'];
@@ -52,8 +53,8 @@ export function AuditoriaPage() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-xl font-semibold text-aco">Log de Execuções</h1>
-        <p className="text-sm text-nevoa">{modoGlobal ? 'Ações de todas as empresas.' : 'Ações registradas nesta empresa.'}</p>
+        <h1 className="text-xl font-semibold text-ink">Log de Execuções</h1>
+        <p className="text-sm text-muted">{modoGlobal ? 'Ações de todas as empresas.' : 'Ações registradas nesta empresa.'}</p>
       </div>
 
       <Card padding="p-3" className="flex flex-wrap items-end gap-3">
@@ -93,64 +94,95 @@ export function AuditoriaPage() {
           />
         </Field>
         {(filtros.entidade || filtros.acao || filtros.dataInicio || filtros.dataFim) && (
-          <button className="text-xs text-latao-escuro hover:underline" onClick={() => setFiltros({})}>
+          <button className="text-xs text-primary hover:underline" onClick={() => setFiltros({})}>
             Limpar filtros
           </button>
         )}
       </Card>
 
-      <Table>
-        <thead>
-          <tr>
-            <Th sortKey="criadoEm" ordenacao={ordenacao} onSort={alternar}>
-              Data
-            </Th>
-            <Th sortKey="entidade" ordenacao={ordenacao} onSort={alternar}>
-              Entidade
-            </Th>
-            <Th sortKey="acao" ordenacao={ordenacao} onSort={alternar}>
-              Ação
-            </Th>
-            <Th sortKey="usuario" ordenacao={ordenacao} onSort={alternar}>
-              Usuário
-            </Th>
-            {modoGlobal && (
-              <Th sortKey="empresa" ordenacao={ordenacao} onSort={alternar}>
-                Empresa
+      {/* Desktop/tablet: tabela completa. */}
+      <div className="hidden md:block">
+        <Table>
+          <thead>
+            <tr>
+              <Th sortKey="criadoEm" ordenacao={ordenacao} onSort={alternar}>
+                Data
               </Th>
+              <Th sortKey="entidade" ordenacao={ordenacao} onSort={alternar}>
+                Entidade
+              </Th>
+              <Th sortKey="acao" ordenacao={ordenacao} onSort={alternar}>
+                Ação
+              </Th>
+              <Th sortKey="usuario" ordenacao={ordenacao} onSort={alternar}>
+                Usuário
+              </Th>
+              {modoGlobal && (
+                <Th sortKey="empresa" ordenacao={ordenacao} onSort={alternar}>
+                  Empresa
+                </Th>
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {isLoading && (
+              <tr>
+                <Td className="text-muted">Carregando…</Td>
+              </tr>
             )}
-          </tr>
-        </thead>
-        <tbody>
-          {isLoading && (
-            <tr>
-              <Td className="text-nevoa">Carregando…</Td>
-            </tr>
-          )}
-          {itensOrdenados?.map((r) => (
-            <tr key={r.id}>
-              <Td className="whitespace-nowrap text-xs text-nevoa">{new Date(r.criadoEm).toLocaleString('pt-BR')}</Td>
-              <Td className="text-xs">
+            {itensOrdenados?.map((r) => (
+              <tr key={r.id}>
+                <Td className="whitespace-nowrap text-xs text-muted">{new Date(r.criadoEm).toLocaleString('pt-BR')}</Td>
+                <Td className="text-xs">
+                  {ROTULO_ENTIDADE[r.entidade] ?? r.entidade}
+                  {r.entidadeId ? <span className="font-mono text-muted"> #{r.entidadeId}</span> : ''}
+                </Td>
+                <Td>
+                  <Badge tom={r.acao}>{ROTULO_ACAO[r.acao] ?? r.acao}</Badge>
+                </Td>
+                <Td>{r.usuario.nome}</Td>
+                {modoGlobal && <Td>{r.empresa?.nome ?? '—'}</Td>}
+              </tr>
+            ))}
+            {itensOrdenados && itensOrdenados.length === 0 && (
+              <tr>
+                <Td className="text-muted">Nenhum registro para os filtros selecionados.</Td>
+              </tr>
+            )}
+          </tbody>
+        </Table>
+      </div>
+
+      {/* Celular: cards empilhados. */}
+      <div className="flex flex-col gap-2 md:hidden">
+        {isLoading && (
+          <div className="flex flex-col gap-2">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Card key={i} padding="p-3" className="h-16 animate-pulse" />
+            ))}
+          </div>
+        )}
+        {itensOrdenados?.map((r) => (
+          <Card key={r.id} padding="p-3">
+            <div className="flex items-start justify-between gap-2">
+              <div className="text-sm text-ink">
                 {ROTULO_ENTIDADE[r.entidade] ?? r.entidade}
-                {r.entidadeId ? <span className="font-mono text-nevoa"> #{r.entidadeId}</span> : ''}
-              </Td>
-              <Td>
-                <Badge tom={r.acao}>{ROTULO_ACAO[r.acao] ?? r.acao}</Badge>
-              </Td>
-              <Td>{r.usuario.nome}</Td>
-              {modoGlobal && <Td>{r.empresa?.nome ?? '—'}</Td>}
-            </tr>
-          ))}
-          {itensOrdenados && itensOrdenados.length === 0 && (
-            <tr>
-              <Td className="text-nevoa">Nenhum registro para os filtros selecionados.</Td>
-            </tr>
-          )}
-        </tbody>
-      </Table>
+                {r.entidadeId ? <span className="font-mono text-xs text-muted"> #{r.entidadeId}</span> : ''}
+              </div>
+              <Badge tom={r.acao}>{ROTULO_ACAO[r.acao] ?? r.acao}</Badge>
+            </div>
+            <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted">
+              <span>{new Date(r.criadoEm).toLocaleString('pt-BR')}</span>
+              <span>{r.usuario.nome}</span>
+              {modoGlobal && <span>{r.empresa?.nome ?? 'Sem empresa'}</span>}
+            </div>
+          </Card>
+        ))}
+        {itensOrdenados && itensOrdenados.length === 0 && <EmptyState mensagem="Nenhum registro para os filtros selecionados." />}
+      </div>
 
       {data && data.total > data.tamanhoPagina && (
-        <div className="flex items-center justify-end gap-3 text-sm text-aco">
+        <div className="flex items-center justify-end gap-3 text-sm text-ink">
           <Button disabled={(filtros.pagina ?? 1) <= 1} onClick={() => setFiltros({ ...filtros, pagina: (filtros.pagina ?? 1) - 1 })}>
             Anterior
           </Button>

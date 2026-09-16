@@ -62,15 +62,15 @@ export function AdicionarItensModal({ escopoId, depositoId, onClose }: { escopoI
     <Modal title="Adicionar ao escopo" onClose={onClose} largura="max-w-lg">
       {resultado ? (
         <div className="flex flex-col gap-3">
-          <div className="text-sm text-conforme">
+          <div className="text-sm text-success">
             {resultado.itensCriados} item(ns) adicionado(s).
             {resultado.ignoradosPorConflito > 0 && (
-              <div className="mt-1 text-divergente">
+              <div className="mt-1 text-danger">
                 {resultado.ignoradosPorConflito} ignorado(s) — já estão em outro escopo ativo neste depósito.
               </div>
             )}
             {resultado.itensCriados === 0 && resultado.ignoradosPorConflito === 0 && (
-              <div className="mt-1 text-nevoa">
+              <div className="mt-1 text-muted">
                 Nenhum item novo — {modo === 'ENDERECOS' ? 'os endereços selecionados não têm saldo registrado, ou já estão todos neste escopo.' : 'os produtos selecionados já estão neste escopo.'}
               </div>
             )}
@@ -86,7 +86,7 @@ export function AdicionarItensModal({ escopoId, depositoId, onClose }: { escopoI
               type="button"
               onClick={() => trocarModo('PRODUTOS')}
               className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                modo === 'PRODUTOS' ? 'bg-aco text-white' : 'border border-nevoa/30 bg-white text-aco'
+                modo === 'PRODUTOS' ? 'bg-primary text-white' : 'border border-stroke bg-card text-ink'
               }`}
             >
               Por produto
@@ -95,7 +95,7 @@ export function AdicionarItensModal({ escopoId, depositoId, onClose }: { escopoI
               type="button"
               onClick={() => trocarModo('ENDERECOS')}
               className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                modo === 'ENDERECOS' ? 'bg-aco text-white' : 'border border-nevoa/30 bg-white text-aco'
+                modo === 'ENDERECOS' ? 'bg-primary text-white' : 'border border-stroke bg-card text-ink'
               }`}
             >
               Por endereço
@@ -103,7 +103,7 @@ export function AdicionarItensModal({ escopoId, depositoId, onClose }: { escopoI
           </div>
 
           {modo === 'ENDERECOS' && (
-            <p className="text-xs text-nevoa">
+            <p className="text-xs text-muted">
               Todo produto com saldo registrado nos endereços escolhidos entra no escopo — mesmo comportamento de abrir
               um escopo "por endereço".
             </p>
@@ -117,40 +117,40 @@ export function AdicionarItensModal({ escopoId, depositoId, onClose }: { escopoI
           />
 
           {modo === 'PRODUTOS' ? (
-            <div className="max-h-72 overflow-y-auto rounded-md border border-nevoa/30">
+            <div className="max-h-72 overflow-y-auto rounded-md border border-stroke/30">
               {produtos?.itens.map((p) => (
-                <label key={p.id} className="flex items-center gap-2 border-b border-nevoa/10 px-3 py-2 text-sm last:border-0 hover:bg-concreto">
+                <label key={p.id} className="flex items-center gap-2 border-b border-stroke/10 px-3 py-2 text-sm last:border-0 hover:bg-surface">
                   <input type="checkbox" checked={produtosSelecionados.has(p.id)} onChange={() => alternarProduto(p.id)} />
-                  <span className="font-mono text-xs text-nevoa">{p.sku}</span>
-                  <span className="text-aco">{p.nome}</span>
+                  <span className="font-mono text-xs text-muted">{p.sku}</span>
+                  <span className="text-ink">{p.nome}</span>
                 </label>
               ))}
               {produtos && produtos.itens.length === 0 && (
-                <div className="px-3 py-3 text-sm text-nevoa">
+                <div className="px-3 py-3 text-sm text-muted">
                   {busca ? 'Nenhum produto encontrado para essa busca.' : 'Nenhum produto encontrado.'}
                 </div>
               )}
             </div>
           ) : (
-            <div className="max-h-72 overflow-y-auto rounded-md border border-nevoa/30">
+            <div className="max-h-72 overflow-y-auto rounded-md border border-stroke/30">
               {enderecos?.map((e) => (
-                <label key={e.id} className="flex items-center gap-2 border-b border-nevoa/10 px-3 py-2 text-sm last:border-0 hover:bg-concreto">
+                <label key={e.id} className="flex items-center gap-2 border-b border-stroke/10 px-3 py-2 text-sm last:border-0 hover:bg-surface">
                   <input type="checkbox" checked={enderecosSelecionados.has(e.id)} onChange={() => alternarEndereco(e.id)} />
-                  <span className="font-mono text-xs text-aco">{e.codigo}</span>
-                  <span className="text-nevoa">
+                  <span className="font-mono text-xs text-ink">{e.codigo}</span>
+                  <span className="text-muted">
                     {e.setor} · {e.rua} · {e.modulo} · {e.nivel}
                   </span>
                 </label>
               ))}
               {enderecos && enderecos.length === 0 && (
-                <div className="px-3 py-3 text-sm text-nevoa">
+                <div className="px-3 py-3 text-sm text-muted">
                   {busca ? 'Nenhum endereço encontrado para essa busca.' : 'Nenhum endereço ativo neste depósito.'}
                 </div>
               )}
             </div>
           )}
 
-          {erro && <div className="text-sm text-divergente">{erro}</div>}
+          {erro && <div className="text-sm text-danger">{erro}</div>}
 
           <div className="flex justify-end gap-2">
             <Button onClick={onClose}>Cancelar</Button>

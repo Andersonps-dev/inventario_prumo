@@ -1,13 +1,47 @@
 @import "tailwindcss";
 
+:root {
+  --x-ink: #0f172a;
+  --x-muted: #64748b;
+  --x-stroke: #e2e8f0;
+  --x-surface: #f8fafc;
+  --x-card: #ffffff;
+}
+
+.dark {
+  --x-ink: #f1f5f9;
+  --x-muted: #94a3b8;
+  --x-stroke: #334155;
+  --x-surface: #0f172a;
+  --x-card: #1e293b;
+}
+
+/* Antes de o usuário escolher um tema explícito, segue a preferência do SO. */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light):not(.dark) {
+    --x-ink: #f1f5f9;
+    --x-muted: #94a3b8;
+    --x-stroke: #334155;
+    --x-surface: #0f172a;
+    --x-card: #1e293b;
+  }
+}
+
 @theme {
-  --color-aco: #12283f;
-  --color-latao: #e0a94a;
-  --color-latao-escuro: #b9832f;
-  --color-nevoa: #8fa6b8;
-  --color-concreto: #f4f5f3;
-  --color-conforme: #1f6f5c;
-  --color-divergente: #b3402f;
+  --color-ink: var(--x-ink);
+  --color-muted: var(--x-muted);
+  --color-stroke: var(--x-stroke);
+  --color-surface: var(--x-surface);
+  --color-card: var(--x-card);
+
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-success: #16a34a;
+  --color-danger: #dc2626;
+  --color-warning: #f59e0b;
+  --color-info: #0ea5e9;
+
+  --radius-card: 12px;
 
   --font-sans:
     'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -32,8 +66,11 @@
 }
 
 body {
-  background-color: var(--color-concreto);
-  color: var(--color-aco);
+  background-color: var(--color-surface);
+  color: var(--color-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Coluna de número não pode "dançar" numa tabela densa. */
+  font-variant-numeric: tabular-nums;
 }

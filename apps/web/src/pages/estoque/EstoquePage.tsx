@@ -47,7 +47,7 @@ export function EstoquePage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-xl font-semibold text-aco">Posição de estoque</h1>
+        <h1 className="text-xl font-semibold text-ink">Posição de estoque</h1>
         <div className="flex flex-wrap gap-2">
           <ExportButton tipo="posicao_estoque" />
           {temPapel('ADMIN', 'SUPERVISOR') && <Button onClick={() => setMovimentando(true)}>Movimento manual</Button>}
@@ -99,19 +99,19 @@ export function EstoquePage() {
           <tbody>
             {isLoading && (
               <tr>
-                <Td className="text-nevoa">Carregando…</Td>
+                <Td className="text-muted">Carregando…</Td>
               </tr>
             )}
             {posicaoOrdenada?.map((p) => (
               <tr key={`${p.produto_id}-${p.endereco_id}`}>
-                <Td className="font-mono text-xs text-nevoa">{p.endereco_interno ? '—' : p.posicao}</Td>
+                <Td className="font-mono text-xs text-muted">{p.endereco_interno ? '—' : p.posicao}</Td>
                 <Td className="font-mono text-xs">{p.sku}</Td>
                 <Td>{p.nome}</Td>
                 <Td>{p.unidade}</Td>
                 <Td>{p.saldo}</Td>
                 <Td>{p.estoque_minimo}</Td>
                 <Td>{p.valor_total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</Td>
-                <Td className="text-xs text-nevoa">
+                <Td className="text-xs text-muted">
                   {p.ultima_movimentacao ? new Date(p.ultima_movimentacao).toLocaleString('pt-BR') : '—'}
                 </Td>
                 <Td>
@@ -121,7 +121,7 @@ export function EstoquePage() {
             ))}
             {posicaoOrdenada && posicaoOrdenada.length === 0 && (
               <tr>
-                <Td className="text-nevoa">Nenhuma posição encontrada.</Td>
+                <Td className="text-muted">Nenhuma posição encontrada.</Td>
               </tr>
             )}
           </tbody>
@@ -130,41 +130,41 @@ export function EstoquePage() {
 
       {/* Celular: cards empilhados — sem rolagem lateral pra alcançar o Kardex. */}
       <div className="flex flex-col gap-2 md:hidden">
-        {isLoading && <div className="text-sm text-nevoa">Carregando…</div>}
+        {isLoading && <div className="text-sm text-muted">Carregando…</div>}
         {posicaoOrdenada?.map((p) => (
           <Card key={`${p.produto_id}-${p.endereco_id}`} padding="p-3">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <div className="font-mono text-xs text-nevoa">{p.sku}</div>
-                <div className="truncate text-sm font-medium text-aco">{p.nome}</div>
-                {!p.endereco_interno && <div className="font-mono text-[11px] text-latao-escuro">{p.posicao}</div>}
+                <div className="font-mono text-xs text-muted">{p.sku}</div>
+                <div className="truncate text-sm font-medium text-ink">{p.nome}</div>
+                {!p.endereco_interno && <div className="font-mono text-[11px] text-warning">{p.posicao}</div>}
               </div>
-              <div className="shrink-0 text-right text-xs text-nevoa">
+              <div className="shrink-0 text-right text-xs text-muted">
                 Valor
-                <div className="text-sm font-semibold text-aco">{p.valor_total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div>
+                <div className="text-sm font-semibold text-ink">{p.valor_total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div>
               </div>
             </div>
             <div className="mt-2.5 grid grid-cols-3 gap-2 text-center">
-              <div className="rounded-md bg-concreto py-1.5">
-                <div className="text-[10px] uppercase tracking-wide text-nevoa">Un.</div>
-                <div className="text-sm font-semibold text-aco">{p.unidade}</div>
+              <div className="rounded-md bg-surface py-1.5">
+                <div className="text-[10px] uppercase tracking-wide text-muted">Un.</div>
+                <div className="text-sm font-semibold text-ink">{p.unidade}</div>
               </div>
-              <div className="rounded-md bg-concreto py-1.5">
-                <div className="text-[10px] uppercase tracking-wide text-nevoa">Saldo</div>
-                <div className="text-sm font-semibold text-aco [font-variant-numeric:tabular-nums]">{p.saldo}</div>
+              <div className="rounded-md bg-surface py-1.5">
+                <div className="text-[10px] uppercase tracking-wide text-muted">Saldo</div>
+                <div className="text-sm font-semibold text-ink [font-variant-numeric:tabular-nums]">{p.saldo}</div>
               </div>
-              <div className="rounded-md bg-concreto py-1.5">
-                <div className="text-[10px] uppercase tracking-wide text-nevoa">Mínimo</div>
-                <div className="text-sm font-semibold text-aco [font-variant-numeric:tabular-nums]">{p.estoque_minimo}</div>
+              <div className="rounded-md bg-surface py-1.5">
+                <div className="text-[10px] uppercase tracking-wide text-muted">Mínimo</div>
+                <div className="text-sm font-semibold text-ink [font-variant-numeric:tabular-nums]">{p.estoque_minimo}</div>
               </div>
             </div>
-            <div className="mt-2 flex items-center justify-between text-xs text-nevoa">
+            <div className="mt-2 flex items-center justify-between text-xs text-muted">
               <span>{p.ultima_movimentacao ? new Date(p.ultima_movimentacao).toLocaleString('pt-BR') : 'Sem movimentação'}</span>
               <RowAction onClick={() => setKardexDe({ id: p.produto_id, nome: p.nome })}>Kardex</RowAction>
             </div>
           </Card>
         ))}
-        {posicaoOrdenada && posicaoOrdenada.length === 0 && <div className="p-3 text-sm text-nevoa">Nenhuma posição encontrada.</div>}
+        {posicaoOrdenada && posicaoOrdenada.length === 0 && <div className="p-3 text-sm text-muted">Nenhuma posição encontrada.</div>}
       </div>
 
       {kardexDe && <KardexModal produtoId={kardexDe.id} nome={kardexDe.nome} onClose={() => setKardexDe(null)} />}

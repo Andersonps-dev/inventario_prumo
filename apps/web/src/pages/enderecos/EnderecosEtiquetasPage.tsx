@@ -52,7 +52,7 @@ export function EnderecosEtiquetasPage() {
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between print:hidden">
-        <h1 className="text-xl font-semibold text-aco">Etiquetas de endereço</h1>
+        <h1 className="text-xl font-semibold text-ink">Etiquetas de endereço</h1>
         <Button variante="primaria" disabled={etiquetas.length === 0} onClick={() => window.print()}>
           Imprimir {etiquetas.length > 0 ? `(${etiquetas.length})` : ''}
         </Button>
@@ -85,14 +85,14 @@ export function EnderecosEtiquetasPage() {
                     min={0}
                     value={quantidades[e.id] ?? 0}
                     onChange={(ev) => definirQuantidade(e.id, Number(ev.target.value))}
-                    className="w-16 rounded-md border border-nevoa/50 px-2 py-1 text-sm"
+                    className="w-16 rounded-md border border-stroke/50 px-2 py-1 text-sm"
                   />
                 </Td>
               </tr>
             ))}
             {listaExibida.length === 0 && (
               <tr>
-                <Td className="text-nevoa">Nenhum endereço encontrado.</Td>
+                <Td className="text-muted">Nenhum endereço encontrado.</Td>
               </tr>
             )}
           </tbody>
@@ -104,8 +104,8 @@ export function EnderecosEtiquetasPage() {
         {listaExibida.map((e) => (
           <Card key={e.id} padding="p-3" className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <div className="font-mono text-sm font-medium text-aco">{e.codigo}</div>
-              <div className="truncate text-xs text-nevoa">
+              <div className="font-mono text-sm font-medium text-ink">{e.codigo}</div>
+              <div className="truncate text-xs text-muted">
                 {e.setor}/{e.rua}/{e.modulo}/{e.nivel}/{e.vao}
               </div>
             </div>
@@ -114,11 +114,11 @@ export function EnderecosEtiquetasPage() {
               min={0}
               value={quantidades[e.id] ?? 0}
               onChange={(ev) => definirQuantidade(e.id, Number(ev.target.value))}
-              className="w-16 shrink-0 rounded-md border border-nevoa/50 px-2 py-1.5 text-sm"
+              className="w-16 shrink-0 rounded-md border border-stroke/50 px-2 py-1.5 text-sm"
             />
           </Card>
         ))}
-        {listaExibida.length === 0 && <div className="p-3 text-sm text-nevoa">Nenhum endereço encontrado.</div>}
+        {listaExibida.length === 0 && <div className="p-3 text-sm text-muted">Nenhum endereço encontrado.</div>}
       </div>
 
       {etiquetas.length > 0 && (

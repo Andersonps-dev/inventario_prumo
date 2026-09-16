@@ -13,7 +13,7 @@ export function DashboardPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-xl font-semibold text-aco">Dashboard</h1>
+        <h1 className="text-xl font-semibold text-ink">Dashboard</h1>
         <ExportButton tipo="dashboard" filtros={filtros} />
       </div>
       <OnboardingChecklist />

@@ -28,7 +28,7 @@ export function FeiraDetailPage() {
   const [confirmandoFechar, setConfirmandoFechar] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
-  if (isLoading || !evento) return <div className="text-nevoa">Carregando…</div>;
+  if (isLoading || !evento) return <div className="text-muted">Carregando…</div>;
 
   const podeGerenciar = temPapel('ADMIN', 'SUPERVISOR');
   const itensNaFeira = evento.posicaoAtual ?? [];
@@ -50,28 +50,28 @@ export function FeiraDetailPage() {
       <Card>
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-semibold text-aco">{evento.titulo}</h1>
+            <h1 className="text-xl font-semibold text-ink">{evento.titulo}</h1>
             {podeGerenciar && (
-              <button type="button" className="text-xs text-latao-escuro hover:underline" onClick={() => setEditando(true)}>
+              <button type="button" className="text-xs text-primary hover:underline" onClick={() => setEditando(true)}>
                 Editar
               </button>
             )}
           </div>
           <Badge tom={evento.status}>{evento.status}</Badge>
         </div>
-        <div className="mt-1 text-sm text-nevoa">
+        <div className="mt-1 text-sm text-muted">
           Depósito de origem: {evento.depositoOrigem.nome} · Criado por {evento.criadoPorUsuario.nome} em{' '}
           {new Date(evento.criadoEm).toLocaleString('pt-BR')}
         </div>
-        <div className="text-sm text-nevoa">
+        <div className="text-sm text-muted">
           Data da feira: {evento.dataEvento ? new Date(evento.dataEvento).toLocaleDateString('pt-BR') : 'não definida'}
         </div>
         {evento.status === 'FECHADO' && evento.fechadoEm && (
-          <div className="text-sm text-nevoa">
+          <div className="text-sm text-muted">
             Fechado por {evento.fechadoPorUsuario?.nome ?? '—'} em {new Date(evento.fechadoEm).toLocaleString('pt-BR')}
           </div>
         )}
-        {erro && <div className="mt-2 text-sm text-divergente">{erro}</div>}
+        {erro && <div className="mt-2 text-sm text-danger">{erro}</div>}
       </Card>
 
       {evento.status === 'ABERTO' ? (
@@ -87,7 +87,7 @@ export function FeiraDetailPage() {
                   Fechar feira e gerar relatório
                 </Button>
               </div>
-              <p className="text-xs text-nevoa">
+              <p className="text-xs text-muted">
                 Só registre retorno pros itens que não venderam e voltaram fisicamente. Vendeu tudo? Pode fechar direto —
                 o que sobrar na feira já é considerado vendido automaticamente, sem precisar registrar retorno de 0.
               </p>
@@ -95,7 +95,7 @@ export function FeiraDetailPage() {
           )}
 
           <div>
-            <div className="mb-2 text-sm font-semibold text-aco">Itens ainda na feira (não vendidos nem devolvidos)</div>
+            <div className="mb-2 text-sm font-semibold text-ink">Itens ainda na feira (não vendidos nem devolvidos)</div>
 
             {/* Desktop/tablet: tabela completa. */}
             <div className="hidden md:block">
@@ -121,7 +121,7 @@ export function FeiraDetailPage() {
                   ))}
                   {itensNaFeira.length === 0 && (
                     <tr>
-                      <Td className="text-nevoa">Nada na feira ainda — tudo foi devolvido ou vendido.</Td>
+                      <Td className="text-muted">Nada na feira ainda — tudo foi devolvido ou vendido.</Td>
                     </tr>
                   )}
                 </tbody>
@@ -134,28 +134,28 @@ export function FeiraDetailPage() {
                 <Card key={p.produto_id} padding="p-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <div className="font-mono text-xs text-nevoa">{p.sku}</div>
-                      <div className="truncate text-sm font-medium text-aco">{p.nome}</div>
+                      <div className="font-mono text-xs text-muted">{p.sku}</div>
+                      <div className="truncate text-sm font-medium text-ink">{p.nome}</div>
                     </div>
-                    <div className="shrink-0 text-right text-xs text-nevoa">
+                    <div className="shrink-0 text-right text-xs text-muted">
                       Valor
-                      <div className="text-sm font-semibold text-aco">{moeda(p.valor_total)}</div>
+                      <div className="text-sm font-semibold text-ink">{moeda(p.valor_total)}</div>
                     </div>
                   </div>
                   <div className="mt-2.5 grid grid-cols-2 gap-2 text-center">
-                    <div className="rounded-md bg-concreto py-1.5">
-                      <div className="text-[10px] uppercase tracking-wide text-nevoa">Un.</div>
-                      <div className="text-sm font-semibold text-aco">{p.unidade}</div>
+                    <div className="rounded-md bg-surface py-1.5">
+                      <div className="text-[10px] uppercase tracking-wide text-muted">Un.</div>
+                      <div className="text-sm font-semibold text-ink">{p.unidade}</div>
                     </div>
-                    <div className="rounded-md bg-concreto py-1.5">
-                      <div className="text-[10px] uppercase tracking-wide text-nevoa">Quantidade</div>
-                      <div className="text-sm font-semibold text-aco [font-variant-numeric:tabular-nums]">{p.saldo}</div>
+                    <div className="rounded-md bg-surface py-1.5">
+                      <div className="text-[10px] uppercase tracking-wide text-muted">Quantidade</div>
+                      <div className="text-sm font-semibold text-ink [font-variant-numeric:tabular-nums]">{p.saldo}</div>
                     </div>
                   </div>
                 </Card>
               ))}
               {itensNaFeira.length === 0 && (
-                <div className="p-3 text-sm text-nevoa">Nada na feira ainda — tudo foi devolvido ou vendido.</div>
+                <div className="p-3 text-sm text-muted">Nada na feira ainda — tudo foi devolvido ou vendido.</div>
               )}
             </div>
           </div>
@@ -164,7 +164,7 @@ export function FeiraDetailPage() {
         evento.relatorioFechamento && (
           <div>
             <div className="mb-2 flex items-center justify-between gap-3">
-              <div className="text-sm font-semibold text-aco">Relatório de venda</div>
+              <div className="text-sm font-semibold text-ink">Relatório de venda</div>
               {evento.relatorioFechamento.itens.length > 0 && (
                 <ExportButton tipo="relatorio_feira" filtros={{ eventoVendaId: eventoId }} rotulo="Exportar relatório" />
               )}
@@ -195,19 +195,19 @@ export function FeiraDetailPage() {
                   ))}
                   {evento.relatorioFechamento.itens.length === 0 && (
                     <tr>
-                      <Td className="text-nevoa">Nada foi vendido — tudo voltou pro estoque.</Td>
+                      <Td className="text-muted">Nada foi vendido — tudo voltou pro estoque.</Td>
                     </tr>
                   )}
                 </tbody>
                 {evento.relatorioFechamento.itens.length > 0 && (
                   <tfoot>
                     <tr>
-                      <Td colSpan={3} className="bg-concreto font-semibold">
+                      <Td colSpan={3} className="bg-surface font-semibold">
                         Total
                       </Td>
-                      <Td className="bg-concreto font-semibold">{evento.relatorioFechamento.quantidadeTotal}</Td>
-                      <Td className="bg-concreto"></Td>
-                      <Td className="bg-concreto font-semibold">{moeda(evento.relatorioFechamento.valorTotal)}</Td>
+                      <Td className="bg-surface font-semibold">{evento.relatorioFechamento.quantidadeTotal}</Td>
+                      <Td className="bg-surface"></Td>
+                      <Td className="bg-surface font-semibold">{moeda(evento.relatorioFechamento.valorTotal)}</Td>
                     </tr>
                   </tfoot>
                 )}
@@ -220,26 +220,26 @@ export function FeiraDetailPage() {
                 <Card key={i.produtoId} padding="p-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <div className="font-mono text-xs text-nevoa">{i.sku}</div>
-                      <div className="truncate text-sm font-medium text-aco">{i.nome}</div>
+                      <div className="font-mono text-xs text-muted">{i.sku}</div>
+                      <div className="truncate text-sm font-medium text-ink">{i.nome}</div>
                     </div>
-                    <div className="shrink-0 text-right text-xs text-nevoa">
+                    <div className="shrink-0 text-right text-xs text-muted">
                       Total
-                      <div className="text-sm font-semibold text-aco">{moeda(i.valorTotal)}</div>
+                      <div className="text-sm font-semibold text-ink">{moeda(i.valorTotal)}</div>
                     </div>
                   </div>
                   <div className="mt-2.5 grid grid-cols-3 gap-2 text-center">
-                    <div className="rounded-md bg-concreto py-1.5">
-                      <div className="text-[10px] uppercase tracking-wide text-nevoa">Un.</div>
-                      <div className="text-sm font-semibold text-aco">{i.unidade}</div>
+                    <div className="rounded-md bg-surface py-1.5">
+                      <div className="text-[10px] uppercase tracking-wide text-muted">Un.</div>
+                      <div className="text-sm font-semibold text-ink">{i.unidade}</div>
                     </div>
-                    <div className="rounded-md bg-concreto py-1.5">
-                      <div className="text-[10px] uppercase tracking-wide text-nevoa">Qtd. vendida</div>
-                      <div className="text-sm font-semibold text-aco [font-variant-numeric:tabular-nums]">{i.quantidade}</div>
+                    <div className="rounded-md bg-surface py-1.5">
+                      <div className="text-[10px] uppercase tracking-wide text-muted">Qtd. vendida</div>
+                      <div className="text-sm font-semibold text-ink [font-variant-numeric:tabular-nums]">{i.quantidade}</div>
                     </div>
-                    <div className="rounded-md bg-concreto py-1.5">
-                      <div className="text-[10px] uppercase tracking-wide text-nevoa">Valor unit.</div>
-                      <div className="text-sm font-semibold text-aco [font-variant-numeric:tabular-nums]">
+                    <div className="rounded-md bg-surface py-1.5">
+                      <div className="text-[10px] uppercase tracking-wide text-muted">Valor unit.</div>
+                      <div className="text-sm font-semibold text-ink [font-variant-numeric:tabular-nums]">
                         {moeda(i.precoCustoUnitario)}
                       </div>
                     </div>
@@ -247,12 +247,12 @@ export function FeiraDetailPage() {
                 </Card>
               ))}
               {evento.relatorioFechamento.itens.length === 0 && (
-                <div className="p-3 text-sm text-nevoa">Nada foi vendido — tudo voltou pro estoque.</div>
+                <div className="p-3 text-sm text-muted">Nada foi vendido — tudo voltou pro estoque.</div>
               )}
               {evento.relatorioFechamento.itens.length > 0 && (
-                <Card padding="p-3" className="flex items-center justify-between bg-concreto">
-                  <span className="text-sm font-semibold text-aco">Total: {evento.relatorioFechamento.quantidadeTotal}</span>
-                  <span className="text-sm font-semibold text-aco">{moeda(evento.relatorioFechamento.valorTotal)}</span>
+                <Card padding="p-3" className="flex items-center justify-between bg-surface">
+                  <span className="text-sm font-semibold text-ink">Total: {evento.relatorioFechamento.quantidadeTotal}</span>
+                  <span className="text-sm font-semibold text-ink">{moeda(evento.relatorioFechamento.valorTotal)}</span>
                 </Card>
               )}
             </div>

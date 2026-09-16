@@ -1,4 +1,5 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Layout } from './Layout';
 import { ProtectedRoute } from './ProtectedRoute';
 import { LoginPage } from '../pages/login/LoginPage';
@@ -19,7 +20,47 @@ import { EmpresasPage } from '../pages/admin/EmpresasPage';
 import { UsuariosPage } from '../pages/admin/UsuariosPage';
 import { AuditoriaPage } from '../pages/admin/AuditoriaPage';
 
+// Título da aba = nome da tela + marca — mapeado por rota em vez de cada
+// página chamar um hook próprio, pra não esquecer nenhuma. Rotas com :id
+// (feira/inventário específico) caem no prefixo genérico.
+const TITULOS_POR_ROTA: Record<string, string> = {
+  '/login': 'Entrar',
+  '/': 'Dashboard',
+  '/produtos': 'Produtos',
+  '/produtos/etiquetas': 'Etiquetas de produtos',
+  '/depositos': 'Depósitos',
+  '/enderecos': 'Endereços',
+  '/enderecos/etiquetas': 'Etiquetas de endereços',
+  '/estoque': 'Estoque',
+  '/feiras': 'Feiras',
+  '/escopos': 'Inventários',
+  '/relatorios/inventario': 'Relatório de inventário',
+  '/relatorios/comparacao-estoque': 'Comparação de estoque',
+  '/admin/usuarios': 'Usuários',
+  '/admin/empresas': 'Empresas',
+  '/admin/auditoria': 'Log de Execuções',
+};
+
+const PREFIXOS_POR_ROTA: [string, string][] = [
+  ['/escopos/', 'Inventário'],
+  ['/feiras/', 'Feira'],
+];
+
+function tituloDaRota(pathname: string): string | undefined {
+  if (TITULOS_POR_ROTA[pathname]) return TITULOS_POR_ROTA[pathname];
+  return PREFIXOS_POR_ROTA.find(([prefixo]) => pathname.startsWith(prefixo))?.[1];
+}
+
+function useTituloDaAba() {
+  const location = useLocation();
+  useEffect(() => {
+    const titulo = tituloDaRota(location.pathname);
+    document.title = titulo ? `${titulo} — Invexa` : 'Invexa — inventário exato';
+  }, [location.pathname]);
+}
+
 export function App() {
+  useTituloDaAba();
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />

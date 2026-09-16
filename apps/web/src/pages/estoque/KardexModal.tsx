@@ -26,20 +26,20 @@ export function KardexModal({ produtoId, nome, onClose }: { produtoId: number; n
         <tbody>
           {isLoading && (
             <tr>
-              <Td className="text-nevoa">Carregando…</Td>
+              <Td className="text-muted">Carregando…</Td>
             </tr>
           )}
           {movimentos?.map((m) => (
             <tr key={m.id}>
               <Td className="text-xs">{new Date(m.criadoEm).toLocaleString('pt-BR')}</Td>
               <Td>{m.tipo}</Td>
-              <Td className={Number(m.quantidade) < 0 ? 'text-divergente' : 'text-conforme'}>{m.quantidade}</Td>
+              <Td className={Number(m.quantidade) < 0 ? 'text-danger' : 'text-success'}>{m.quantidade}</Td>
               <Td>{m.saldoPosterior}</Td>
-              <Td className="font-mono text-xs text-nevoa">{m.endereco.interno ? '—' : m.endereco.codigo}</Td>
+              <Td className="font-mono text-xs text-muted">{m.endereco.interno ? '—' : m.endereco.codigo}</Td>
               <Td className="max-w-[200px] text-xs">
                 {m.origemTipo ?? '—'} {m.origemId ? `#${m.origemId}` : ''}
                 {m.motivo && (
-                  <div className="truncate italic text-nevoa" title={m.motivo}>
+                  <div className="truncate italic text-muted" title={m.motivo}>
                     {m.motivo}
                   </div>
                 )}
@@ -51,7 +51,7 @@ export function KardexModal({ produtoId, nome, onClose }: { produtoId: number; n
           ))}
           {movimentos && movimentos.length === 0 && (
             <tr>
-              <Td className="text-nevoa">Sem movimentações.</Td>
+              <Td className="text-muted">Sem movimentações.</Td>
             </tr>
           )}
         </tbody>
