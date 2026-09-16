@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../app/AuthContext';
 import { Button } from '../../components/Button';
 import { Field, Input } from '../../components/Input';
@@ -10,6 +11,7 @@ export function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [mostrarSenha, setMostrarSenha] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [carregando, setCarregando] = useState(false);
 
@@ -43,7 +45,24 @@ export function LoginPage() {
             <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoFocus />
           </Field>
           <Field label="Senha">
-            <Input type="password" required value={senha} onChange={(e) => setSenha(e.target.value)} />
+            <div className="relative">
+              <Input
+                type={mostrarSenha ? 'text' : 'password'}
+                required
+                value={senha}
+                onChange={(e) => setSenha(e.target.value)}
+                className="w-full pr-9"
+              />
+              <button
+                type="button"
+                onClick={() => setMostrarSenha((v) => !v)}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted hover:text-ink"
+                aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
+                tabIndex={-1}
+              >
+                {mostrarSenha ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
           </Field>
 
           {erro && <div className="text-sm text-danger">{erro}</div>}

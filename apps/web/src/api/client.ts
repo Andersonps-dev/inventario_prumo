@@ -53,7 +53,10 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
     body,
   });
 
-  if (response.status === 401) {
+  // Só é "sessão expirada" se a requisição de fato levava um token — um 401
+  // sem token (ex.: /auth/login com senha errada) é credencial inválida, não
+  // sessão vencida, e não deve derrubar a página de login no meio da digitação.
+  if (response.status === 401 && token) {
     localStorage.removeItem('prumo:token');
     localStorage.removeItem('prumo:usuario');
     window.location.href = '/login';
