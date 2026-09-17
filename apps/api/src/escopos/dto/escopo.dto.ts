@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
 import {
+  ArrayMinSize,
   IsArray,
   IsDateString,
   IsIn,
@@ -129,6 +130,13 @@ export class MotivoDto {
   @IsString()
   @MinLength(3)
   motivo!: string;
+}
+
+export class CancelarContagensLoteDto extends MotivoDto {
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsInt({ each: true })
+  contagemIds!: number[];
 }
 
 export class RegistrarContagemDto {

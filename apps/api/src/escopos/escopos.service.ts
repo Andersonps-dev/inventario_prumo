@@ -1,4 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditoriaService } from '../common/auditoria/auditoria.service';
 import { EscopoSelecaoService, ParProdutoEndereco } from './escopo-selecao.service';
@@ -518,7 +519,32 @@ export class EscoposService {
   }
 
   async cancelarContagem(escopoId: number, contagemId: number, motivo: string, usuarioId: number, empresaId: number) {
-    const contagem = await this.prisma.contagem.findUnique({
+    await this.prisma.$transaction((tx) => this.cancelarContagemNaTransacao(tx, escopoId, contagemId, motivo, usuarioId, empresaId));
+  }
+
+  /**
+   * Mesmo cancelamento, só que várias contagens de uma vez numa única
+   * transação — tudo ou nada, senão o usuário não saberia dizer quais das
+   * selecionadas realmente foram canceladas se uma no meio falhasse.
+   */
+  async cancelarContagensEmLote(escopoId: number, contagemIds: number[], motivo: string, usuarioId: number, empresaId: number) {
+    await this.prisma.$transaction(async (tx) => {
+      for (const contagemId of contagemIds) {
+        await this.cancelarContagemNaTransacao(tx, escopoId, contagemId, motivo, usuarioId, empresaId);
+      }
+    });
+    return { canceladas: contagemIds.length };
+  }
+
+  private async cancelarContagemNaTransacao(
+    tx: Prisma.TransactionClient,
+    escopoId: number,
+    contagemId: number,
+    motivo: string,
+    usuarioId: number,
+    empresaId: number,
+  ) {
+    const contagem = await tx.contagem.findUnique({
       where: { id: contagemId },
       include: { escopoItem: { include: { escopo: true } } },
     });
@@ -532,44 +558,42 @@ export class EscoposService {
       throw new ConflictException('Escopo não permite alteração de contagens neste status.');
     }
 
-    return this.prisma.$transaction(async (tx) => {
-      await tx.contagem.update({
-        where: { id: contagemId },
-        data: { status: 'CANCELADA', motivoCancelamento: motivo, canceladoPor: usuarioId, canceladoEm: new Date() },
-      });
-
-      const anterior = await tx.contagem.findFirst({
-        where: { escopoItemId: contagem.escopoItemId, sequencia: contagem.sequencia - 1 },
-      });
-
-      if (anterior) {
-        await tx.contagem.update({ where: { id: anterior.id }, data: { status: 'VALIDA' } });
-        await tx.escopoItem.update({
-          where: { id: contagem.escopoItemId },
-          data: {
-            quantidadeFinal: anterior.quantidade,
-            diferenca: Number(anterior.quantidade) - Number(contagem.escopoItem.saldoCongelado),
-            status: 'CONTADO',
-          },
-        });
-      } else {
-        await tx.escopoItem.update({
-          where: { id: contagem.escopoItemId },
-          data: { quantidadeFinal: null, diferenca: null, status: 'PENDENTE' },
-        });
-      }
-
-      await this.auditoria.registrar(
-        {
-          entidade: 'contagem',
-          entidadeId: contagemId,
-          acao: 'CANCELAR',
-          depois: { motivo },
-          usuarioId,
-          empresaId,
-        },
-        tx,
-      );
+    await tx.contagem.update({
+      where: { id: contagemId },
+      data: { status: 'CANCELADA', motivoCancelamento: motivo, canceladoPor: usuarioId, canceladoEm: new Date() },
     });
+
+    const anterior = await tx.contagem.findFirst({
+      where: { escopoItemId: contagem.escopoItemId, sequencia: contagem.sequencia - 1 },
+    });
+
+    if (anterior) {
+      await tx.contagem.update({ where: { id: anterior.id }, data: { status: 'VALIDA' } });
+      await tx.escopoItem.update({
+        where: { id: contagem.escopoItemId },
+        data: {
+          quantidadeFinal: anterior.quantidade,
+          diferenca: Number(anterior.quantidade) - Number(contagem.escopoItem.saldoCongelado),
+          status: 'CONTADO',
+        },
+      });
+    } else {
+      await tx.escopoItem.update({
+        where: { id: contagem.escopoItemId },
+        data: { quantidadeFinal: null, diferenca: null, status: 'PENDENTE' },
+      });
+    }
+
+    await this.auditoria.registrar(
+      {
+        entidade: 'contagem',
+        entidadeId: contagemId,
+        acao: 'CANCELAR',
+        depois: { motivo },
+        usuarioId,
+        empresaId,
+      },
+      tx,
+    );
   }
 }

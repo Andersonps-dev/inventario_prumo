@@ -12,6 +12,7 @@ import { ComprovanteService } from './comprovante.service';
 import {
   AdicionarItensDto,
   AtualizarEscopoDto,
+  CancelarContagensLoteDto,
   CriarEscopoDto,
   EfetivarEscopoDto,
   MotivoDto,
@@ -132,6 +133,17 @@ export class EscoposController {
     @EmpresaAtual() empresaId: number,
   ) {
     return this.escoposService.cancelarContagem(id, contagemId, dto.motivo, usuario.id, empresaId);
+  }
+
+  @Papeis('SUPERVISOR', 'ADMIN')
+  @Post(':id/contagens/cancelar-lote')
+  cancelarContagensEmLote(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: CancelarContagensLoteDto,
+    @UsuarioAtual() usuario: UsuarioAutenticado,
+    @EmpresaAtual() empresaId: number,
+  ) {
+    return this.escoposService.cancelarContagensEmLote(id, dto.contagemIds, dto.motivo, usuario.id, empresaId);
   }
 
   @Get(':id/conferencia')

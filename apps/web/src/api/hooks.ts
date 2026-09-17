@@ -323,6 +323,18 @@ export function useCancelarContagem() {
   });
 }
 
+export function useCancelarContagensEmLote() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ escopoId, contagemIds, motivo }: { escopoId: number; contagemIds: number[]; motivo: string }) =>
+      apiFetch<{ canceladas: number }>(`/escopos/${escopoId}/contagens/cancelar-lote`, {
+        method: 'POST',
+        body: { contagemIds, motivo },
+      }),
+    onSuccess: (_d, v) => qc.invalidateQueries({ queryKey: ['escopos', v.escopoId] }),
+  });
+}
+
 // ─────────────── Dashboard ───────────────
 
 export interface FiltrosDashboard {

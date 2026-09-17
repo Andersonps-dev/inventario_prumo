@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   useAbrirEscopo,
-  useCancelarContagem,
   useCancelarEscopo,
   useCancelarItem,
   useEncerrarContagem,
@@ -20,6 +19,7 @@ import { ApiError, baixarArquivo } from '../../api/client';
 import { ContagemRapida } from './ContagemRapida';
 import { ConferenciaPainel } from './ConferenciaPainel';
 import { AdicionarItensModal } from './AdicionarItensModal';
+import { CancelarContagensModal } from './CancelarContagensModal';
 import { ExportButton } from '../../components/ExportButton';
 import { PromptDialog } from '../../components/PromptDialog';
 import { VoltarLink } from '../../components/VoltarLink';
@@ -37,12 +37,12 @@ export function EscopoDetailPage() {
   const reabrir = useReabrirEscopo();
   const cancelarEscopo = useCancelarEscopo();
   const cancelarItem = useCancelarItem();
-  const cancelarContagem = useCancelarContagem();
 
   const [filtro, setFiltro] = useState<Filtro>('TODOS');
   const [erro, setErro] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
   const [adicionandoItens, setAdicionandoItens] = useState(false);
+  const [cancelandoContagens, setCancelandoContagens] = useState(false);
   const [motivoPendente, setMotivoPendente] = useState<{
     titulo: string;
     onConfirmar: (motivo: string) => Promise<unknown>;
@@ -119,16 +119,8 @@ export function EscopoDetailPage() {
     });
   };
 
-  const onCancelarContagem = (item: EscopoItem) => {
-    const valida = item.contagens.find((c) => c.status === 'VALIDA');
-    if (!valida) return;
-    setMotivoPendente({
-      titulo: 'Cancelar contagem',
-      onConfirmar: (motivo) => cancelarContagem.mutateAsync({ escopoId, contagemId: valida.id, motivo }),
-    });
-  };
-
   const podeContar = escopo.status === 'ABERTO' || escopo.status === 'EM_CONTAGEM';
+  const itensContados = itensValidos.filter((i) => i.status === 'CONTADO');
 
   return (
     <div className="flex flex-col gap-4">
@@ -188,6 +180,9 @@ export function EscopoDetailPage() {
           )}
           {podeGerenciar && ['ABERTO', 'EM_CONTAGEM'].includes(escopo.status) && (
             <Button onClick={() => setAdicionandoItens(true)}>Adicionar itens</Button>
+          )}
+          {podeGerenciar && itensContados.length > 0 && ['RASCUNHO', 'ABERTO', 'EM_CONTAGEM'].includes(escopo.status) && (
+            <Button onClick={() => setCancelandoContagens(true)}>Cancelar contagens</Button>
           )}
           {podeGerenciar && escopo.status === 'EM_CONTAGEM' && (
             <Button variante="primaria" onClick={() => acao(() => encerrarContagem.mutateAsync({ id: escopoId }))}>
@@ -268,11 +263,6 @@ export function EscopoDetailPage() {
                       <Td>
                         {podeGerenciar && (
                           <RowActions>
-                            {item.status === 'CONTADO' && (
-                              <RowAction className="text-xs" onClick={() => onCancelarContagem(item)}>
-                                Cancelar contagem
-                              </RowAction>
-                            )}
                             <RowAction tom="perigo" className="text-xs" onClick={() => onCancelarItem(item)}>
                               Remover
                             </RowAction>
@@ -331,11 +321,6 @@ export function EscopoDetailPage() {
                     </div>
                     {podeGerenciar && (
                       <RowActions>
-                        {item.status === 'CONTADO' && (
-                          <RowAction className="mt-2 text-xs" onClick={() => onCancelarContagem(item)}>
-                            Cancelar contagem
-                          </RowAction>
-                        )}
                         <RowAction tom="perigo" className="mt-2 text-xs" onClick={() => onCancelarItem(item)}>
                           Remover
                         </RowAction>
@@ -352,6 +337,10 @@ export function EscopoDetailPage() {
 
       {adicionandoItens && (
         <AdicionarItensModal escopoId={escopoId} depositoId={escopo.deposito.id} onClose={() => setAdicionandoItens(false)} />
+      )}
+
+      {cancelandoContagens && (
+        <CancelarContagensModal escopoId={escopoId} itensContados={itensContados} onClose={() => setCancelandoContagens(false)} />
       )}
 
       {motivoPendente && (
