@@ -364,6 +364,45 @@ export interface TransferenciaDetalhe {
   itens: TransferenciaItem[];
 }
 
+// ─────────────── Entrada por nota fiscal ───────────────
+
+export type StatusEntrada = 'RASCUNHO' | 'EM_DISTRIBUICAO' | 'CONCLUIDA' | 'CANCELADA';
+
+export interface EntradaResumo {
+  id: number;
+  codigo: string;
+  nota: string;
+  status: StatusEntrada;
+  criadoEm: string;
+  deposito: { nome: string };
+  criadoPorUsuario: { nome: string };
+  _count: { itens: number };
+}
+
+export interface EntradaItem {
+  id: number;
+  produtoId: number;
+  quantidadeRecebida: string;
+  quantidadeDistribuida: string;
+  produto: { id: number; sku: string; codigoBarras: string | null; nome: string; unidade: string; precoCusto: string };
+}
+
+export interface EntradaDetalhe {
+  id: number;
+  codigo: string;
+  nota: string;
+  status: StatusEntrada;
+  deposito: { id: number; nome: string };
+  criadoPorUsuario: { nome: string };
+  canceladoPorUsuario: { nome: string } | null;
+  criadoEm: string;
+  finalizadoEm: string | null;
+  concluidoEm: string | null;
+  canceladoEm: string | null;
+  motivoCancelamento: string | null;
+  itens: EntradaItem[];
+}
+
 export interface MovimentoEstoque {
   id: number;
   tipo: string;

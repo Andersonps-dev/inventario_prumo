@@ -20,6 +20,8 @@ import type {
   Papel,
   PosicaoEstoqueLinha,
   Produto,
+  EntradaDetalhe,
+  EntradaResumo,
   QualidadeInventario,
   SaudeEstoque,
   TransferenciaDetalhe,
@@ -633,6 +635,85 @@ export function useCancelarTransferencia() {
     onSuccess: (_d, v) => {
       qc.invalidateQueries({ queryKey: ['transferencias', v.id] });
       qc.invalidateQueries({ queryKey: ['transferencias'] });
+    },
+  });
+}
+
+// ─────────────── Entrada por nota fiscal ───────────────
+
+export function useEntradas(status?: string) {
+  return useQuery({
+    queryKey: ['entradas', status],
+    queryFn: () => apiFetch<EntradaResumo[]>(`/entradas${status ? `?status=${status}` : ''}`),
+  });
+}
+
+export function useEntrada(id: number) {
+  return useQuery({
+    queryKey: ['entradas', id],
+    queryFn: () => apiFetch<EntradaDetalhe>(`/entradas/${id}`),
+  });
+}
+
+export function useCriarEntrada() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (dto: { nota: string; depositoId: number }) => apiFetch<EntradaDetalhe>('/entradas', { method: 'POST', body: dto }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['entradas'] }),
+  });
+}
+
+export function useBiparEntrada() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, produtoId, quantidade }: { id: number; produtoId: number; quantidade: number }) =>
+      apiFetch<EntradaDetalhe>(`/entradas/${id}/itens`, { method: 'POST', body: { produtoId, quantidade } }),
+    onSuccess: (_d, v) => {
+      qc.invalidateQueries({ queryKey: ['entradas', v.id] });
+      qc.invalidateQueries({ queryKey: ['entradas'] });
+    },
+  });
+}
+
+export function useFinalizarEntrada() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => apiFetch<EntradaDetalhe>(`/entradas/${id}/finalizar`, { method: 'POST' }),
+    onSuccess: (_d, id) => {
+      qc.invalidateQueries({ queryKey: ['entradas', id] });
+      qc.invalidateQueries({ queryKey: ['entradas'] });
+    },
+  });
+}
+
+export function useDistribuirEntrada() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      enderecoId,
+      itens,
+    }: {
+      id: number;
+      enderecoId: number;
+      itens: { produtoId: number; quantidade: number }[];
+    }) => apiFetch<EntradaDetalhe>(`/entradas/${id}/distribuir`, { method: 'POST', body: { enderecoId, itens } }),
+    onSuccess: (_d, v) => {
+      qc.invalidateQueries({ queryKey: ['entradas', v.id] });
+      qc.invalidateQueries({ queryKey: ['entradas'] });
+      qc.invalidateQueries({ queryKey: ['estoque'] });
+    },
+  });
+}
+
+export function useCancelarEntrada() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, motivo }: { id: number; motivo: string }) =>
+      apiFetch<EntradaDetalhe>(`/entradas/${id}/cancelar`, { method: 'POST', body: { motivo } }),
+    onSuccess: (_d, v) => {
+      qc.invalidateQueries({ queryKey: ['entradas', v.id] });
+      qc.invalidateQueries({ queryKey: ['entradas'] });
     },
   });
 }

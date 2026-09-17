@@ -31,11 +31,19 @@ enum OrigemTipo {
   IMPORTACAO
   EVENTO_VENDA
   TRANSFERENCIA_ITEM
+  ENTRADA_ITEM
 }
 
 enum StatusTransferencia {
   ABERTA
   EFETIVADA
+  CANCELADA
+}
+
+enum StatusEntrada {
+  RASCUNHO
+  EM_DISTRIBUICAO
+  CONCLUIDA
   CANCELADA
 }
 
@@ -132,6 +140,8 @@ model Empresa {
   posicoesEventos    EventoVendaPosicao[]
   transferencias     Transferencia[]
   transferenciaItens TransferenciaItem[]
+  entradas           Entrada[]
+  entradaItens       EntradaItem[]
 
   @@map("empresa")
 }
@@ -158,6 +168,7 @@ model Produto {
   itensEscopo        EscopoItem[]
   reservasEventos    EventoVendaReserva[]
   itensTransferencia TransferenciaItem[]
+  itensEntrada       EntradaItem[]
 
   @@unique([empresaId, sku])
   @@unique([empresaId, codigoBarras])
@@ -179,6 +190,7 @@ model Deposito {
 
   eventosOrigem  EventoVenda[]   @relation("EventoDepositoOrigem")
   transferencias Transferencia[]
+  entradas       Entrada[]
 
   @@unique([empresaId, nome])
   @@map("deposito")
@@ -467,6 +479,54 @@ model TransferenciaItem {
   @@map("transferencia_item")
 }
 
+// ─────────────── Entrada por nota fiscal ───────────────
+
+// Duas fases: RASCUNHO bipa o que chegou (sem posição ainda — mercadoria
+// nova, não existe estoque prévio pra checar), depois EM_DISTRIBUICAO bipa
+// posição e distribui as quantidades recebidas pra lá. Só fecha (CONCLUIDA)
+// quando `quantidadeDistribuida` bater com `quantidadeRecebida` em todo
+// item — pode sair da tela e voltar depois pra terminar de distribuir.
+model Entrada {
+  id                  Int           @id @default(autoincrement())
+  empresaId           Int           @map("empresa_id")
+  empresa             Empresa       @relation(fields: [empresaId], references: [id])
+  codigo              String
+  nota                String
+  depositoId          Int           @map("deposito_id")
+  deposito            Deposito      @relation(fields: [depositoId], references: [id])
+  status              StatusEntrada @default(RASCUNHO)
+  criadoPor           Int           @map("criado_por")
+  criadoPorUsuario    Usuario       @relation("EntradaCriadoPor", fields: [criadoPor], references: [id])
+  criadoEm            DateTime      @default(now()) @map("criado_em")
+  finalizadoEm        DateTime?     @map("finalizado_em")
+  concluidoEm         DateTime?     @map("concluido_em")
+  canceladoPor        Int?          @map("cancelado_por")
+  canceladoPorUsuario Usuario?      @relation("EntradaCanceladoPor", fields: [canceladoPor], references: [id])
+  canceladoEm         DateTime?     @map("cancelado_em")
+  motivoCancelamento  String?       @map("motivo_cancelamento")
+
+  itens EntradaItem[]
+
+  @@unique([empresaId, codigo])
+  @@index([empresaId, status])
+  @@map("entrada")
+}
+
+model EntradaItem {
+  id                    Int     @id @default(autoincrement())
+  empresaId             Int     @map("empresa_id")
+  empresa               Empresa @relation(fields: [empresaId], references: [id])
+  entradaId             Int     @map("entrada_id")
+  entrada               Entrada @relation(fields: [entradaId], references: [id])
+  produtoId             Int     @map("produto_id")
+  produto               Produto @relation(fields: [produtoId], references: [id])
+  quantidadeRecebida    Decimal @map("quantidade_recebida") @db.Decimal(14, 4)
+  quantidadeDistribuida Decimal @default(0) @map("quantidade_distribuida") @db.Decimal(14, 4)
+
+  @@unique([entradaId, produtoId])
+  @@map("entrada_item")
+}
+
 // ─────────────── Acesso e auditoria ───────────────
 
 model Usuario {
@@ -495,6 +555,8 @@ model Usuario {
   transferenciasCriadas    Transferencia[]    @relation("TransferenciaCriadoPor")
   transferenciasEfetivadas Transferencia[]    @relation("TransferenciaEfetivadoPor")
   transferenciasCanceladas Transferencia[]    @relation("TransferenciaCanceladoPor")
+  entradasCriadas          Entrada[]          @relation("EntradaCriadoPor")
+  entradasCanceladas       Entrada[]          @relation("EntradaCanceladoPor")
 
   @@index([empresaId])
   @@map("usuario")

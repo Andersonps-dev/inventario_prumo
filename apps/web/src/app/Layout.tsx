@@ -7,6 +7,7 @@ import {
   Building2,
   ChevronDown,
   ClipboardList,
+  FileInput,
   History,
   LayoutDashboard,
   Layers,
@@ -41,6 +42,7 @@ const NAV_OPERACIONAL = [
   { to: '/estoque', label: 'Estoque', icon: Boxes },
   { to: '/feiras', label: 'Grêmio', icon: Store },
   { to: '/transferencias', label: 'Transferências', icon: ArrowLeftRight },
+  { to: '/entradas', label: 'Entradas', icon: FileInput },
   { to: '/escopos', label: 'Inventários', icon: ClipboardList },
   // Relatórios/comparação expõem catálogo e estoque em massa — mesmo
   // recorte de papel que o backend exige (relatorios.controller.ts).
