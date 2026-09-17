@@ -8,6 +8,7 @@ import { Card } from '../../components/Card';
 import { EmptyState } from '../../components/EmptyState';
 import { SkeletonLinhas } from '../../components/Skeleton';
 import { RowActions, RowAction } from '../../components/RowActions';
+import { FiltrosPanel } from '../../components/FiltrosPanel';
 import { Input } from '../../components/Input';
 import { useAuth } from '../../app/AuthContext';
 import { useOrdenacao } from '../../app/useOrdenacao';
@@ -82,28 +83,30 @@ export function ProdutosPage() {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <Input
-          placeholder="Buscar por nome, SKU ou código de barras"
-          value={busca}
-          onChange={(e) => {
-            setBusca(e.target.value);
-            setPagina(1);
-          }}
-          className="w-72"
-        />
-        <label className="flex items-center gap-2 text-sm text-ink">
-          <input
-            type="checkbox"
-            checked={abaixoDoMinimo}
+      <FiltrosPanel ativos={(busca ? 1 : 0) + (abaixoDoMinimo ? 1 : 0)}>
+        <div className="flex flex-wrap items-center gap-3">
+          <Input
+            placeholder="Buscar por nome, SKU ou código de barras"
+            value={busca}
             onChange={(e) => {
-              setAbaixoDoMinimo(e.target.checked);
+              setBusca(e.target.value);
               setPagina(1);
             }}
+            className="w-72"
           />
-          Só abaixo do mínimo
-        </label>
-      </div>
+          <label className="flex items-center gap-2 text-sm text-ink">
+            <input
+              type="checkbox"
+              checked={abaixoDoMinimo}
+              onChange={(e) => {
+                setAbaixoDoMinimo(e.target.checked);
+                setPagina(1);
+              }}
+            />
+            Só abaixo do mínimo
+          </label>
+        </div>
+      </FiltrosPanel>
 
       {erro && <div className="text-sm text-danger">{erro}</div>}
 

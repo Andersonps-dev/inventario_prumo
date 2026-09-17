@@ -8,6 +8,7 @@ import { Field, Input, Select } from '../../components/Input';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { EmptyState } from '../../components/EmptyState';
+import { FiltrosPanel } from '../../components/FiltrosPanel';
 import { useOrdenacao } from '../../app/useOrdenacao';
 
 const ACOES = ['CRIAR', 'EDITAR', 'CANCELAR', 'EFETIVAR', 'EXPORTAR', 'EXCLUIR'];
@@ -57,48 +58,52 @@ export function AuditoriaPage() {
         <p className="text-sm text-muted">{modoGlobal ? 'Ações de todas as empresas.' : 'Ações registradas nesta empresa.'}</p>
       </div>
 
-      <Card padding="p-3" className="flex flex-wrap items-end gap-3">
-        <Field label="Entidade">
-          <Input
-            placeholder="ex.: produto, escopo_inventario"
-            value={filtros.entidade ?? ''}
-            onChange={(e) => setFiltros({ ...filtros, entidade: e.target.value || undefined, pagina: 1 })}
-            className="w-52"
-          />
-        </Field>
-        <Field label="Ação">
-          <Select
-            value={filtros.acao ?? ''}
-            onChange={(e) => setFiltros({ ...filtros, acao: e.target.value || undefined, pagina: 1 })}
-          >
-            <option value="">Todas</option>
-            {ACOES.map((a) => (
-              <option key={a} value={a}>
-                {a}
-              </option>
-            ))}
-          </Select>
-        </Field>
-        <Field label="De">
-          <Input
-            type="date"
-            value={filtros.dataInicio ?? ''}
-            onChange={(e) => setFiltros({ ...filtros, dataInicio: e.target.value || undefined, pagina: 1 })}
-          />
-        </Field>
-        <Field label="Até">
-          <Input
-            type="date"
-            value={filtros.dataFim ?? ''}
-            onChange={(e) => setFiltros({ ...filtros, dataFim: e.target.value || undefined, pagina: 1 })}
-          />
-        </Field>
-        {(filtros.entidade || filtros.acao || filtros.dataInicio || filtros.dataFim) && (
-          <button className="text-xs text-primary hover:underline" onClick={() => setFiltros({})}>
-            Limpar filtros
-          </button>
-        )}
-      </Card>
+      <FiltrosPanel
+        ativos={[filtros.entidade, filtros.acao, filtros.dataInicio, filtros.dataFim].filter(Boolean).length}
+      >
+        <Card padding="p-3" className="flex flex-wrap items-end gap-3">
+          <Field label="Entidade">
+            <Input
+              placeholder="ex.: produto, escopo_inventario"
+              value={filtros.entidade ?? ''}
+              onChange={(e) => setFiltros({ ...filtros, entidade: e.target.value || undefined, pagina: 1 })}
+              className="w-52"
+            />
+          </Field>
+          <Field label="Ação">
+            <Select
+              value={filtros.acao ?? ''}
+              onChange={(e) => setFiltros({ ...filtros, acao: e.target.value || undefined, pagina: 1 })}
+            >
+              <option value="">Todas</option>
+              {ACOES.map((a) => (
+                <option key={a} value={a}>
+                  {a}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field label="De">
+            <Input
+              type="date"
+              value={filtros.dataInicio ?? ''}
+              onChange={(e) => setFiltros({ ...filtros, dataInicio: e.target.value || undefined, pagina: 1 })}
+            />
+          </Field>
+          <Field label="Até">
+            <Input
+              type="date"
+              value={filtros.dataFim ?? ''}
+              onChange={(e) => setFiltros({ ...filtros, dataFim: e.target.value || undefined, pagina: 1 })}
+            />
+          </Field>
+          {(filtros.entidade || filtros.acao || filtros.dataInicio || filtros.dataFim) && (
+            <button className="text-xs text-primary hover:underline" onClick={() => setFiltros({})}>
+              Limpar filtros
+            </button>
+          )}
+        </Card>
+      </FiltrosPanel>
 
       {/* Desktop/tablet: tabela completa. */}
       <div className="hidden md:block">

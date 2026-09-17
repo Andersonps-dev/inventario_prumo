@@ -6,6 +6,7 @@ import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { EmptyState } from '../../components/EmptyState';
+import { FiltrosPanel } from '../../components/FiltrosPanel';
 import { Select } from '../../components/Input';
 import { useAuth } from '../../app/AuthContext';
 import { NovaTransferenciaModal } from './NovaTransferenciaModal';
@@ -27,14 +28,16 @@ export function TransferenciasListPage() {
         )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <Select value={status} onChange={(e) => setStatus(e.target.value)} className="w-56">
-          <option value="">Todos os status</option>
-          <option value="ABERTA">Aberta</option>
-          <option value="EFETIVADA">Efetivada</option>
-          <option value="CANCELADA">Cancelada</option>
-        </Select>
-      </div>
+      <FiltrosPanel ativos={status ? 1 : 0}>
+        <div className="flex flex-wrap items-center gap-3">
+          <Select value={status} onChange={(e) => setStatus(e.target.value)} className="w-56">
+            <option value="">Todos os status</option>
+            <option value="ABERTA">Aberta</option>
+            <option value="EFETIVADA">Efetivada</option>
+            <option value="CANCELADA">Cancelada</option>
+          </Select>
+        </div>
+      </FiltrosPanel>
 
       {/* Desktop/tablet: tabela completa. */}
       <div className="hidden md:block">

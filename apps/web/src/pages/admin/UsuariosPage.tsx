@@ -7,6 +7,7 @@ import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { EmptyState } from '../../components/EmptyState';
 import { RowActions, RowAction } from '../../components/RowActions';
+import { FiltrosPanel } from '../../components/FiltrosPanel';
 import { Input, Select } from '../../components/Input';
 import { ApiError } from '../../api/client';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
@@ -78,21 +79,23 @@ export function UsuariosPage() {
 
       {erro && <div className="text-sm text-danger">{erro}</div>}
 
-      <div className="flex flex-wrap items-center gap-3">
-        <Input placeholder="Buscar por nome ou email…" value={busca} onChange={(e) => setBusca(e.target.value)} className="w-64" />
-        <Select value={filtroPapel} onChange={(e) => setFiltroPapel(e.target.value)} className="w-48">
-          <option value="">Todos os papéis</option>
-          <option value="CONTADOR">Contador</option>
-          <option value="SUPERVISOR">Supervisor</option>
-          <option value="ADMIN">Admin</option>
-          {modoGlobal && <option value="SUPER_ADMIN">Super admin</option>}
-        </Select>
-        <Select value={filtroSituacao} onChange={(e) => setFiltroSituacao(e.target.value)} className="w-48">
-          <option value="">Todas as situações</option>
-          <option value="ativo">Só ativos</option>
-          <option value="inativo">Só inativos</option>
-        </Select>
-      </div>
+      <FiltrosPanel ativos={(busca ? 1 : 0) + (filtroPapel ? 1 : 0) + (filtroSituacao ? 1 : 0)}>
+        <div className="flex flex-wrap items-center gap-3">
+          <Input placeholder="Buscar por nome ou email…" value={busca} onChange={(e) => setBusca(e.target.value)} className="w-64" />
+          <Select value={filtroPapel} onChange={(e) => setFiltroPapel(e.target.value)} className="w-48">
+            <option value="">Todos os papéis</option>
+            <option value="CONTADOR">Contador</option>
+            <option value="SUPERVISOR">Supervisor</option>
+            <option value="ADMIN">Admin</option>
+            {modoGlobal && <option value="SUPER_ADMIN">Super admin</option>}
+          </Select>
+          <Select value={filtroSituacao} onChange={(e) => setFiltroSituacao(e.target.value)} className="w-48">
+            <option value="">Todas as situações</option>
+            <option value="ativo">Só ativos</option>
+            <option value="inativo">Só inativos</option>
+          </Select>
+        </div>
+      </FiltrosPanel>
 
       {/* Desktop/tablet: tabela completa. */}
       <div className="hidden md:block">

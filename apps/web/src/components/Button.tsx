@@ -27,7 +27,7 @@ export function Button({
   return (
     <button
       disabled={disabled || carregando}
-      className={`inline-flex min-h-9 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm transition-all duration-150 ease-out active:scale-[0.98] disabled:cursor-not-allowed disabled:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/45 ${CLASSES[variante]} ${className}`}
+      className={`inline-flex min-h-8 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs transition-all duration-150 ease-out active:scale-[0.98] disabled:cursor-not-allowed disabled:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/45 sm:min-h-9 sm:gap-2 sm:px-4 sm:py-2 sm:text-sm ${CLASSES[variante]} ${className}`}
       {...props}
     >
       {carregando && (

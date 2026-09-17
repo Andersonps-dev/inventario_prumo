@@ -6,6 +6,7 @@ import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { EmptyState } from '../../components/EmptyState';
+import { FiltrosPanel } from '../../components/FiltrosPanel';
 import { Input, Select } from '../../components/Input';
 import { useAuth } from '../../app/AuthContext';
 import { useOrdenacao } from '../../app/useOrdenacao';
@@ -44,18 +45,20 @@ export function EscoposListPage() {
         )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <Input placeholder="Buscar por código ou título…" value={busca} onChange={(e) => setBusca(e.target.value)} className="w-64" />
-        <Select value={status} onChange={(e) => setStatus(e.target.value)} className="w-56">
-          <option value="">Todos os status</option>
-          <option value="RASCUNHO">Rascunho</option>
-          <option value="ABERTO">Aberto</option>
-          <option value="EM_CONTAGEM">Em contagem</option>
-          <option value="CONFERENCIA">Conferência</option>
-          <option value="EFETIVADO">Efetivado</option>
-          <option value="CANCELADO">Cancelado</option>
-        </Select>
-      </div>
+      <FiltrosPanel ativos={(busca ? 1 : 0) + (status ? 1 : 0)}>
+        <div className="flex flex-wrap items-center gap-3">
+          <Input placeholder="Buscar por código ou título…" value={busca} onChange={(e) => setBusca(e.target.value)} className="w-64" />
+          <Select value={status} onChange={(e) => setStatus(e.target.value)} className="w-56">
+            <option value="">Todos os status</option>
+            <option value="RASCUNHO">Rascunho</option>
+            <option value="ABERTO">Aberto</option>
+            <option value="EM_CONTAGEM">Em contagem</option>
+            <option value="CONFERENCIA">Conferência</option>
+            <option value="EFETIVADO">Efetivado</option>
+            <option value="CANCELADO">Cancelado</option>
+          </Select>
+        </div>
+      </FiltrosPanel>
 
       {/* Desktop/tablet: tabela completa. */}
       <div className="hidden md:block">

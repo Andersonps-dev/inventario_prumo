@@ -5,6 +5,7 @@ import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { RowActions, RowAction } from '../../components/RowActions';
 import { Card } from '../../components/Card';
+import { FiltrosPanel } from '../../components/FiltrosPanel';
 import { Input, Select } from '../../components/Input';
 import { ApiError } from '../../api/client';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
@@ -92,11 +93,13 @@ export function DepositosPage() {
 
       {erro && <div className="text-sm text-danger">{erro}</div>}
 
-      <Select value={filtroSituacao} onChange={(e) => setFiltroSituacao(e.target.value)} className="w-48">
-        <option value="">Todas as situações</option>
-        <option value="ativo">Só ativos</option>
-        <option value="inativo">Só inativos</option>
-      </Select>
+      <FiltrosPanel ativos={filtroSituacao ? 1 : 0}>
+        <Select value={filtroSituacao} onChange={(e) => setFiltroSituacao(e.target.value)} className="w-48">
+          <option value="">Todas as situações</option>
+          <option value="ativo">Só ativos</option>
+          <option value="inativo">Só inativos</option>
+        </Select>
+      </FiltrosPanel>
 
       {/* Desktop/tablet: tabela completa. */}
       <div className="hidden md:block">

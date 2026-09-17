@@ -6,6 +6,7 @@ import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { RowActions, RowAction } from '../../components/RowActions';
+import { FiltrosPanel } from '../../components/FiltrosPanel';
 import { Input, Select } from '../../components/Input';
 import { useAuth } from '../../app/AuthContext';
 import { useOrdenacao } from '../../app/useOrdenacao';
@@ -91,17 +92,19 @@ export function EnderecosPage() {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <Input placeholder="Buscar por código, setor, rua…" value={busca} onChange={(e) => setBusca(e.target.value)} className="w-72" />
-        <Select value={depositoId ?? ''} onChange={(e) => setDepositoId(e.target.value ? Number(e.target.value) : undefined)}>
-          <option value="">Todos os depósitos</option>
-          {depositos?.map((d) => (
-            <option key={d.id} value={d.id}>
-              {d.nome}
-            </option>
-          ))}
-        </Select>
-      </div>
+      <FiltrosPanel ativos={(busca ? 1 : 0) + (depositoId ? 1 : 0)}>
+        <div className="flex flex-wrap items-center gap-3">
+          <Input placeholder="Buscar por código, setor, rua…" value={busca} onChange={(e) => setBusca(e.target.value)} className="w-72" />
+          <Select value={depositoId ?? ''} onChange={(e) => setDepositoId(e.target.value ? Number(e.target.value) : undefined)}>
+            <option value="">Todos os depósitos</option>
+            {depositos?.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.nome}
+              </option>
+            ))}
+          </Select>
+        </div>
+      </FiltrosPanel>
 
       {erro && <div className="text-sm text-danger">{erro}</div>}
 

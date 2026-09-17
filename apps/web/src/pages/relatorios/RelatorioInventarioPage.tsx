@@ -6,6 +6,7 @@ import { Badge } from '../../components/Badge';
 import { Field, Input, Select } from '../../components/Input';
 import { Card } from '../../components/Card';
 import { ExportButton } from '../../components/ExportButton';
+import { FiltrosPanel } from '../../components/FiltrosPanel';
 import { useOrdenacao } from '../../app/useOrdenacao';
 
 export function RelatorioInventarioPage() {
@@ -38,58 +39,62 @@ export function RelatorioInventarioPage() {
         <ExportButton tipo="relatorio_inventario" filtros={filtros} rotulo="Exportar relatório" />
       </div>
 
-      <Card padding="p-3" className="flex flex-wrap items-end gap-3">
-        <Field label="Depósito">
-          <Select
-            value={filtros.depositoId ?? ''}
-            onChange={(e) => setFiltros({ ...filtros, depositoId: e.target.value ? Number(e.target.value) : undefined })}
-          >
-            <option value="">Todos</option>
-            {depositos?.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.nome}
-              </option>
-            ))}
-          </Select>
-        </Field>
-        <Field label="Escopo">
-          <Select
-            value={filtros.escopoId ?? ''}
-            onChange={(e) => setFiltros({ ...filtros, escopoId: e.target.value ? Number(e.target.value) : undefined })}
-          >
-            <option value="">Todos</option>
-            {escopos?.map((e) => (
-              <option key={e.id} value={e.id}>
-                {e.codigo} — {e.titulo}
-              </option>
-            ))}
-          </Select>
-        </Field>
-        <Field label="Endereço">
-          <Select
-            value={filtros.enderecoId ?? ''}
-            onChange={(e) => setFiltros({ ...filtros, enderecoId: e.target.value ? Number(e.target.value) : undefined })}
-          >
-            <option value="">Todos</option>
-            {enderecos?.map((e) => (
-              <option key={e.id} value={e.id}>
-                {e.codigo}
-              </option>
-            ))}
-          </Select>
-        </Field>
-        <Field label="De">
-          <Input type="date" value={filtros.dataInicio ?? ''} onChange={(e) => setFiltros({ ...filtros, dataInicio: e.target.value || undefined })} />
-        </Field>
-        <Field label="Até">
-          <Input type="date" value={filtros.dataFim ?? ''} onChange={(e) => setFiltros({ ...filtros, dataFim: e.target.value || undefined })} />
-        </Field>
-        {(filtros.depositoId || filtros.escopoId || filtros.enderecoId || filtros.dataInicio || filtros.dataFim) && (
-          <button className="text-xs text-primary hover:underline" onClick={() => setFiltros({})}>
-            Limpar filtros
-          </button>
-        )}
-      </Card>
+      <FiltrosPanel
+        ativos={[filtros.depositoId, filtros.escopoId, filtros.enderecoId, filtros.dataInicio, filtros.dataFim].filter(Boolean).length}
+      >
+        <Card padding="p-3" className="flex flex-wrap items-end gap-3">
+          <Field label="Depósito">
+            <Select
+              value={filtros.depositoId ?? ''}
+              onChange={(e) => setFiltros({ ...filtros, depositoId: e.target.value ? Number(e.target.value) : undefined })}
+            >
+              <option value="">Todos</option>
+              {depositos?.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.nome}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field label="Escopo">
+            <Select
+              value={filtros.escopoId ?? ''}
+              onChange={(e) => setFiltros({ ...filtros, escopoId: e.target.value ? Number(e.target.value) : undefined })}
+            >
+              <option value="">Todos</option>
+              {escopos?.map((e) => (
+                <option key={e.id} value={e.id}>
+                  {e.codigo} — {e.titulo}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field label="Endereço">
+            <Select
+              value={filtros.enderecoId ?? ''}
+              onChange={(e) => setFiltros({ ...filtros, enderecoId: e.target.value ? Number(e.target.value) : undefined })}
+            >
+              <option value="">Todos</option>
+              {enderecos?.map((e) => (
+                <option key={e.id} value={e.id}>
+                  {e.codigo}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field label="De">
+            <Input type="date" value={filtros.dataInicio ?? ''} onChange={(e) => setFiltros({ ...filtros, dataInicio: e.target.value || undefined })} />
+          </Field>
+          <Field label="Até">
+            <Input type="date" value={filtros.dataFim ?? ''} onChange={(e) => setFiltros({ ...filtros, dataFim: e.target.value || undefined })} />
+          </Field>
+          {(filtros.depositoId || filtros.escopoId || filtros.enderecoId || filtros.dataInicio || filtros.dataFim) && (
+            <button className="text-xs text-primary hover:underline" onClick={() => setFiltros({})}>
+              Limpar filtros
+            </button>
+          )}
+        </Card>
+      </FiltrosPanel>
 
       {linhas && (
         <div className="flex gap-3 text-xs text-muted">

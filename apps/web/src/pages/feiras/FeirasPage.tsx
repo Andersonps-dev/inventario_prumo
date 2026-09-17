@@ -5,6 +5,7 @@ import { Table, Th, Td } from '../../components/Table';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
+import { FiltrosPanel } from '../../components/FiltrosPanel';
 import { Input, Select } from '../../components/Input';
 import { useAuth } from '../../app/AuthContext';
 import { useOrdenacao } from '../../app/useOrdenacao';
@@ -49,14 +50,16 @@ export function FeirasPage() {
         )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <Input placeholder="Buscar por título…" value={busca} onChange={(e) => setBusca(e.target.value)} className="w-64" />
-        <Select value={status} onChange={(e) => setStatus(e.target.value)} className="w-48">
-          <option value="">Todos os status</option>
-          <option value="ABERTO">Aberto</option>
-          <option value="FECHADO">Fechado</option>
-        </Select>
-      </div>
+      <FiltrosPanel ativos={(busca ? 1 : 0) + (status ? 1 : 0)}>
+        <div className="flex flex-wrap items-center gap-3">
+          <Input placeholder="Buscar por título…" value={busca} onChange={(e) => setBusca(e.target.value)} className="w-64" />
+          <Select value={status} onChange={(e) => setStatus(e.target.value)} className="w-48">
+            <option value="">Todos os status</option>
+            <option value="ABERTO">Aberto</option>
+            <option value="FECHADO">Fechado</option>
+          </Select>
+        </div>
+      </FiltrosPanel>
 
       {/* Desktop/tablet: tabela completa. */}
       <div className="hidden md:block">

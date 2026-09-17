@@ -4,6 +4,7 @@ import { Table, Th, Td } from '../../components/Table';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { RowAction } from '../../components/RowActions';
+import { FiltrosPanel } from '../../components/FiltrosPanel';
 import { Input, Select } from '../../components/Input';
 import { useAuth } from '../../app/AuthContext';
 import { useOrdenacao } from '../../app/useOrdenacao';
@@ -55,17 +56,19 @@ export function EstoquePage() {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <Input placeholder="Buscar por SKU ou nome…" value={busca} onChange={(e) => setBusca(e.target.value)} className="w-64" />
-        <Select value={depositoId} onChange={(e) => setDepositoId(e.target.value ? Number(e.target.value) : '')} className="w-56">
-          <option value="">Todos os depósitos</option>
-          {depositos?.map((d) => (
-            <option key={d.id} value={d.id}>
-              {d.nome}
-            </option>
-          ))}
-        </Select>
-      </div>
+      <FiltrosPanel ativos={(busca ? 1 : 0) + (depositoId ? 1 : 0)}>
+        <div className="flex flex-wrap items-center gap-3">
+          <Input placeholder="Buscar por SKU ou nome…" value={busca} onChange={(e) => setBusca(e.target.value)} className="w-64" />
+          <Select value={depositoId} onChange={(e) => setDepositoId(e.target.value ? Number(e.target.value) : '')} className="w-56">
+            <option value="">Todos os depósitos</option>
+            {depositos?.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.nome}
+              </option>
+            ))}
+          </Select>
+        </div>
+      </FiltrosPanel>
 
       {/* Desktop/tablet: tabela completa. */}
       <div className="hidden md:block">
