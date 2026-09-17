@@ -171,7 +171,7 @@ export function EscopoDetailPage() {
           Depósito {escopo.deposito.nome} · Resp. {escopo.responsavel?.nome ?? '—'} ·{' '}
           Prazo {escopo.prazo ? new Date(escopo.prazo).toLocaleDateString('pt-BR') : '—'}
         </div>
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
           {podeGerenciar && escopo.status === 'RASCUNHO' && (
             <Button variante="primaria" onClick={abrirEscopo}>
               Abrir escopo
@@ -296,7 +296,21 @@ export function EscopoDetailPage() {
                           <div className="font-mono text-[11px] text-warning">{item.endereco.codigo}</div>
                         )}
                       </div>
-                      <Badge tom={item.status}>{item.status}</Badge>
+                      <div className="flex shrink-0 items-center gap-1">
+                        <Badge tom={item.status}>{item.status}</Badge>
+                        {podeGerenciar && (
+                          <RowActions>
+                            {item.status === 'CONTADO' && (
+                              <RowAction className="text-xs" onClick={() => setCancelandoItem(item)}>
+                                Cancelar contagem
+                              </RowAction>
+                            )}
+                            <RowAction tom="perigo" className="text-xs" onClick={() => onCancelarItem(item)}>
+                              Remover
+                            </RowAction>
+                          </RowActions>
+                        )}
+                      </div>
                     </div>
                     <div className="mt-2.5 grid grid-cols-3 gap-2 text-center">
                       <div className="rounded-md bg-surface py-1.5">
@@ -320,18 +334,6 @@ export function EscopoDetailPage() {
                         </div>
                       </div>
                     </div>
-                    {podeGerenciar && (
-                      <RowActions>
-                        {item.status === 'CONTADO' && (
-                          <RowAction className="mt-2 text-xs" onClick={() => setCancelandoItem(item)}>
-                            Cancelar contagem
-                          </RowAction>
-                        )}
-                        <RowAction tom="perigo" className="mt-2 text-xs" onClick={() => onCancelarItem(item)}>
-                          Remover
-                        </RowAction>
-                      </RowActions>
-                    )}
                   </Card>
                 );
               })}
