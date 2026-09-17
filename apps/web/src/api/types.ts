@@ -288,6 +288,7 @@ export interface RelatorioFechamentoEvento {
 export interface ItemReservaEvento {
   produto_id: number;
   sku: string;
+  codigo_barras: string | null;
   nome: string;
   unidade: string;
   endereco_id: number;

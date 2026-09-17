@@ -36,7 +36,7 @@ export class EventosVendaService {
         posicoes: { include: { endereco: { select: { id: true, codigo: true, interno: true } } } },
         reservas: {
           include: {
-            produto: { select: { sku: true, nome: true, unidade: true, precoCusto: true } },
+            produto: { select: { sku: true, codigoBarras: true, nome: true, unidade: true, precoCusto: true } },
             endereco: { select: { codigo: true, interno: true } },
           },
         },
@@ -52,6 +52,7 @@ export class EventosVendaService {
         ? reservas.map((r) => ({
             produto_id: r.produtoId,
             sku: r.produto.sku,
+            codigo_barras: r.produto.codigoBarras,
             nome: r.produto.nome,
             unidade: r.produto.unidade,
             endereco_id: r.enderecoId,

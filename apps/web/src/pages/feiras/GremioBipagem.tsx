@@ -88,9 +88,13 @@ export function GremioBipagem({
     }
 
     if (modo === 'DEVOLVER') {
-      const item = itensReservados.find((r) => r.endereco_id === enderecoAtual.enderecoId && r.sku.toLowerCase() === termo);
+      const item = itensReservados.find(
+        (r) =>
+          r.endereco_id === enderecoAtual.enderecoId &&
+          (r.sku.toLowerCase() === termo || r.codigo_barras?.toLowerCase() === termo),
+      );
       if (!item) {
-        setErro(`Nada reservado com SKU "${codigo}" na posição ${enderecoAtual.codigo}.`);
+        setErro(`Nada reservado com SKU ou código de barras "${codigo}" na posição ${enderecoAtual.codigo}.`);
         return;
       }
       setEnviando(true);
@@ -190,7 +194,11 @@ export function GremioBipagem({
               autoComplete="off"
               autoCapitalize="characters"
               spellCheck={false}
-              placeholder={modo === 'ADICIONAR' ? 'Bipe o código de barras ou digite o SKU' : 'Bipe o SKU do que está devolvendo'}
+              placeholder={
+                modo === 'ADICIONAR'
+                  ? 'Bipe o código de barras ou digite o SKU'
+                  : 'Bipe o código de barras ou digite o SKU do que está devolvendo'
+              }
               value={codigo}
               onChange={(e) => setCodigo(e.target.value)}
               className="min-w-0 flex-1 rounded-md border border-stroke px-3 py-3 text-base outline-none focus:border-primary focus:ring-1 focus:ring-primary md:py-2 md:text-sm"
