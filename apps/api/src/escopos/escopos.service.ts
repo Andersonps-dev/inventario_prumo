@@ -1,5 +1,4 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditoriaService } from '../common/auditoria/auditoria.service';
 import { EscopoSelecaoService, ParProdutoEndereco } from './escopo-selecao.service';
@@ -518,82 +517,105 @@ export class EscoposService {
     });
   }
 
-  async cancelarContagem(escopoId: number, contagemId: number, motivo: string, usuarioId: number, empresaId: number) {
-    await this.prisma.$transaction((tx) => this.cancelarContagemNaTransacao(tx, escopoId, contagemId, motivo, usuarioId, empresaId));
-  }
-
   /**
-   * Mesmo cancelamento, só que várias contagens de uma vez numa única
-   * transação — tudo ou nada, senão o usuário não saberia dizer quais das
-   * selecionadas realmente foram canceladas se uma no meio falhasse.
+   * Cancela (total ou parcialmente) a contagem válida vigente de um item.
+   * Cancelamento total (quantidadeCancelar === quantidade contada) volta o
+   * item pra contagem anterior (se houver) ou pra PENDENTE — igual já era.
+   * Cancelamento parcial cria uma nova contagem corretiva com o restante,
+   * preservando a contagem original no histórico como CANCELADA (em vez de
+   * editar a quantidade dela, o que apagaria o rastro de auditoria).
    */
-  async cancelarContagensEmLote(escopoId: number, contagemIds: number[], motivo: string, usuarioId: number, empresaId: number) {
-    await this.prisma.$transaction(async (tx) => {
-      for (const contagemId of contagemIds) {
-        await this.cancelarContagemNaTransacao(tx, escopoId, contagemId, motivo, usuarioId, empresaId);
-      }
-    });
-    return { canceladas: contagemIds.length };
-  }
-
-  private async cancelarContagemNaTransacao(
-    tx: Prisma.TransactionClient,
+  async cancelarContagem(
     escopoId: number,
     contagemId: number,
+    quantidadeCancelar: number,
     motivo: string,
     usuarioId: number,
     empresaId: number,
   ) {
-    const contagem = await tx.contagem.findUnique({
-      where: { id: contagemId },
-      include: { escopoItem: { include: { escopo: true } } },
-    });
-    if (!contagem || contagem.escopoItem.escopoId !== escopoId || contagem.empresaId !== empresaId) {
-      throw new NotFoundException('Contagem não encontrada.');
-    }
-    if (contagem.status !== 'VALIDA') {
-      throw new ConflictException('Só é possível cancelar a contagem válida vigente.');
-    }
-    if (!ESTADOS_ATIVOS.includes(contagem.escopoItem.escopo.status)) {
-      throw new ConflictException('Escopo não permite alteração de contagens neste status.');
-    }
+    await this.prisma.$transaction(async (tx) => {
+      const contagem = await tx.contagem.findUnique({
+        where: { id: contagemId },
+        include: { escopoItem: { include: { escopo: true } } },
+      });
+      if (!contagem || contagem.escopoItem.escopoId !== escopoId || contagem.empresaId !== empresaId) {
+        throw new NotFoundException('Contagem não encontrada.');
+      }
+      if (contagem.status !== 'VALIDA') {
+        throw new ConflictException('Só é possível cancelar a contagem válida vigente.');
+      }
+      if (!ESTADOS_ATIVOS.includes(contagem.escopoItem.escopo.status)) {
+        throw new ConflictException('Escopo não permite alteração de contagens neste status.');
+      }
 
-    await tx.contagem.update({
-      where: { id: contagemId },
-      data: { status: 'CANCELADA', motivoCancelamento: motivo, canceladoPor: usuarioId, canceladoEm: new Date() },
-    });
+      const quantidadeAtual = Number(contagem.quantidade);
+      if (quantidadeCancelar > quantidadeAtual) {
+        throw new BadRequestException(
+          `Quantidade a cancelar (${quantidadeCancelar}) maior que a quantidade contada (${quantidadeAtual}).`,
+        );
+      }
 
-    const anterior = await tx.contagem.findFirst({
-      where: { escopoItemId: contagem.escopoItemId, sequencia: contagem.sequencia - 1 },
-    });
+      await tx.contagem.update({
+        where: { id: contagemId },
+        data: { status: 'CANCELADA', motivoCancelamento: motivo, canceladoPor: usuarioId, canceladoEm: new Date() },
+      });
 
-    if (anterior) {
-      await tx.contagem.update({ where: { id: anterior.id }, data: { status: 'VALIDA' } });
-      await tx.escopoItem.update({
-        where: { id: contagem.escopoItemId },
-        data: {
-          quantidadeFinal: anterior.quantidade,
-          diferenca: Number(anterior.quantidade) - Number(contagem.escopoItem.saldoCongelado),
-          status: 'CONTADO',
+      const restante = quantidadeAtual - quantidadeCancelar;
+
+      if (restante > 0) {
+        await tx.contagem.create({
+          data: {
+            empresaId,
+            escopoItemId: contagem.escopoItemId,
+            sequencia: contagem.sequencia + 1,
+            quantidade: restante,
+            observacao: `Ajuste após cancelamento parcial (motivo: ${motivo})`,
+            contadoPor: usuarioId,
+            status: 'VALIDA',
+          },
+        });
+        await tx.escopoItem.update({
+          where: { id: contagem.escopoItemId },
+          data: {
+            quantidadeFinal: restante,
+            diferenca: restante - Number(contagem.escopoItem.saldoCongelado),
+            status: 'CONTADO',
+          },
+        });
+      } else {
+        const anterior = await tx.contagem.findFirst({
+          where: { escopoItemId: contagem.escopoItemId, sequencia: contagem.sequencia - 1 },
+        });
+
+        if (anterior) {
+          await tx.contagem.update({ where: { id: anterior.id }, data: { status: 'VALIDA' } });
+          await tx.escopoItem.update({
+            where: { id: contagem.escopoItemId },
+            data: {
+              quantidadeFinal: anterior.quantidade,
+              diferenca: Number(anterior.quantidade) - Number(contagem.escopoItem.saldoCongelado),
+              status: 'CONTADO',
+            },
+          });
+        } else {
+          await tx.escopoItem.update({
+            where: { id: contagem.escopoItemId },
+            data: { quantidadeFinal: null, diferenca: null, status: 'PENDENTE' },
+          });
+        }
+      }
+
+      await this.auditoria.registrar(
+        {
+          entidade: 'contagem',
+          entidadeId: contagemId,
+          acao: 'CANCELAR',
+          depois: { motivo, quantidadeCancelada: quantidadeCancelar },
+          usuarioId,
+          empresaId,
         },
-      });
-    } else {
-      await tx.escopoItem.update({
-        where: { id: contagem.escopoItemId },
-        data: { quantidadeFinal: null, diferenca: null, status: 'PENDENTE' },
-      });
-    }
-
-    await this.auditoria.registrar(
-      {
-        entidade: 'contagem',
-        entidadeId: contagemId,
-        acao: 'CANCELAR',
-        depois: { motivo },
-        usuarioId,
-        empresaId,
-      },
-      tx,
-    );
+        tx,
+      );
+    });
   }
 }

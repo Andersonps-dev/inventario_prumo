@@ -1,12 +1,12 @@
 import { Type } from 'class-transformer';
 import {
-  ArrayMinSize,
   IsArray,
   IsDateString,
   IsIn,
   IsInt,
   IsNumber,
   IsOptional,
+  IsPositive,
   IsString,
   MinLength,
   ValidateNested,
@@ -132,11 +132,10 @@ export class MotivoDto {
   motivo!: string;
 }
 
-export class CancelarContagensLoteDto extends MotivoDto {
-  @IsArray()
-  @ArrayMinSize(1)
-  @IsInt({ each: true })
-  contagemIds!: number[];
+export class CancelarContagemDto extends MotivoDto {
+  @IsNumber()
+  @IsPositive()
+  quantidade!: number;
 }
 
 export class RegistrarContagemDto {

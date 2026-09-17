@@ -12,7 +12,7 @@ import { ComprovanteService } from './comprovante.service';
 import {
   AdicionarItensDto,
   AtualizarEscopoDto,
-  CancelarContagensLoteDto,
+  CancelarContagemDto,
   CriarEscopoDto,
   EfetivarEscopoDto,
   MotivoDto,
@@ -128,22 +128,11 @@ export class EscoposController {
   cancelarContagem(
     @Param('id', ParseIntPipe) id: number,
     @Param('contagemId', ParseIntPipe) contagemId: number,
-    @Body() dto: MotivoDto,
+    @Body() dto: CancelarContagemDto,
     @UsuarioAtual() usuario: UsuarioAutenticado,
     @EmpresaAtual() empresaId: number,
   ) {
-    return this.escoposService.cancelarContagem(id, contagemId, dto.motivo, usuario.id, empresaId);
-  }
-
-  @Papeis('SUPERVISOR', 'ADMIN')
-  @Post(':id/contagens/cancelar-lote')
-  cancelarContagensEmLote(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: CancelarContagensLoteDto,
-    @UsuarioAtual() usuario: UsuarioAutenticado,
-    @EmpresaAtual() empresaId: number,
-  ) {
-    return this.escoposService.cancelarContagensEmLote(id, dto.contagemIds, dto.motivo, usuario.id, empresaId);
+    return this.escoposService.cancelarContagem(id, contagemId, dto.quantidade, dto.motivo, usuario.id, empresaId);
   }
 
   @Get(':id/conferencia')

@@ -317,20 +317,17 @@ export function useCancelarItem() {
 export function useCancelarContagem() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ escopoId, contagemId, motivo }: { escopoId: number; contagemId: number; motivo: string }) =>
-      apiFetch(`/escopos/${escopoId}/contagens/${contagemId}/cancelar`, { method: 'POST', body: { motivo } }),
-    onSuccess: (_d, v) => qc.invalidateQueries({ queryKey: ['escopos', v.escopoId] }),
-  });
-}
-
-export function useCancelarContagensEmLote() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ escopoId, contagemIds, motivo }: { escopoId: number; contagemIds: number[]; motivo: string }) =>
-      apiFetch<{ canceladas: number }>(`/escopos/${escopoId}/contagens/cancelar-lote`, {
-        method: 'POST',
-        body: { contagemIds, motivo },
-      }),
+    mutationFn: ({
+      escopoId,
+      contagemId,
+      quantidade,
+      motivo,
+    }: {
+      escopoId: number;
+      contagemId: number;
+      quantidade: number;
+      motivo: string;
+    }) => apiFetch(`/escopos/${escopoId}/contagens/${contagemId}/cancelar`, { method: 'POST', body: { quantidade, motivo } }),
     onSuccess: (_d, v) => qc.invalidateQueries({ queryKey: ['escopos', v.escopoId] }),
   });
 }

@@ -19,7 +19,7 @@ import { ApiError, baixarArquivo } from '../../api/client';
 import { ContagemRapida } from './ContagemRapida';
 import { ConferenciaPainel } from './ConferenciaPainel';
 import { AdicionarItensModal } from './AdicionarItensModal';
-import { CancelarContagensModal } from './CancelarContagensModal';
+import { CancelarContagemModal } from './CancelarContagemModal';
 import { ExportButton } from '../../components/ExportButton';
 import { PromptDialog } from '../../components/PromptDialog';
 import { VoltarLink } from '../../components/VoltarLink';
@@ -42,7 +42,7 @@ export function EscopoDetailPage() {
   const [erro, setErro] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
   const [adicionandoItens, setAdicionandoItens] = useState(false);
-  const [cancelandoContagens, setCancelandoContagens] = useState(false);
+  const [cancelandoItem, setCancelandoItem] = useState<EscopoItem | null>(null);
   const [motivoPendente, setMotivoPendente] = useState<{
     titulo: string;
     onConfirmar: (motivo: string) => Promise<unknown>;
@@ -120,7 +120,6 @@ export function EscopoDetailPage() {
   };
 
   const podeContar = escopo.status === 'ABERTO' || escopo.status === 'EM_CONTAGEM';
-  const itensContados = itensValidos.filter((i) => i.status === 'CONTADO');
 
   return (
     <div className="flex flex-col gap-4">
@@ -180,9 +179,6 @@ export function EscopoDetailPage() {
           )}
           {podeGerenciar && ['ABERTO', 'EM_CONTAGEM'].includes(escopo.status) && (
             <Button onClick={() => setAdicionandoItens(true)}>Adicionar itens</Button>
-          )}
-          {podeGerenciar && itensContados.length > 0 && ['RASCUNHO', 'ABERTO', 'EM_CONTAGEM'].includes(escopo.status) && (
-            <Button onClick={() => setCancelandoContagens(true)}>Cancelar contagens</Button>
           )}
           {podeGerenciar && escopo.status === 'EM_CONTAGEM' && (
             <Button variante="primaria" onClick={() => acao(() => encerrarContagem.mutateAsync({ id: escopoId }))}>
@@ -263,6 +259,11 @@ export function EscopoDetailPage() {
                       <Td>
                         {podeGerenciar && (
                           <RowActions>
+                            {item.status === 'CONTADO' && (
+                              <RowAction className="text-xs" onClick={() => setCancelandoItem(item)}>
+                                Cancelar contagem
+                              </RowAction>
+                            )}
                             <RowAction tom="perigo" className="text-xs" onClick={() => onCancelarItem(item)}>
                               Remover
                             </RowAction>
@@ -321,6 +322,11 @@ export function EscopoDetailPage() {
                     </div>
                     {podeGerenciar && (
                       <RowActions>
+                        {item.status === 'CONTADO' && (
+                          <RowAction className="mt-2 text-xs" onClick={() => setCancelandoItem(item)}>
+                            Cancelar contagem
+                          </RowAction>
+                        )}
                         <RowAction tom="perigo" className="mt-2 text-xs" onClick={() => onCancelarItem(item)}>
                           Remover
                         </RowAction>
@@ -339,8 +345,8 @@ export function EscopoDetailPage() {
         <AdicionarItensModal escopoId={escopoId} depositoId={escopo.deposito.id} onClose={() => setAdicionandoItens(false)} />
       )}
 
-      {cancelandoContagens && (
-        <CancelarContagensModal escopoId={escopoId} itensContados={itensContados} onClose={() => setCancelandoContagens(false)} />
+      {cancelandoItem && (
+        <CancelarContagemModal escopoId={escopoId} item={cancelandoItem} onClose={() => setCancelandoItem(null)} />
       )}
 
       {motivoPendente && (
