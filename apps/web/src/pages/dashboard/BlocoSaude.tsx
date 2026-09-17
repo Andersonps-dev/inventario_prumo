@@ -84,26 +84,46 @@ export function BlocoSaude({ filtros }: { filtros: FiltrosDashboard }) {
 
         <Card>
           <div className="mb-2 text-sm font-semibold text-ink">Top 10 — valor imobilizado</div>
-          <Table>
-            <thead>
-              <tr>
-                <Th>SKU</Th>
-                <Th>Produto</Th>
-                <Th>Saldo</Th>
-                <Th>Valor</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.top10ValorImobilizado.map((p) => (
-                <tr key={p.produtoId}>
-                  <Td className="font-mono text-xs">{p.sku}</Td>
-                  <Td>{p.nome}</Td>
-                  <Td>{p.saldo}</Td>
-                  <Td>{moeda(p.valor)}</Td>
+
+          {/* Desktop/tablet: tabela completa. */}
+          <div className="hidden md:block">
+            <Table>
+              <thead>
+                <tr>
+                  <Th>SKU</Th>
+                  <Th>Produto</Th>
+                  <Th>Saldo</Th>
+                  <Th>Valor</Th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
+              </thead>
+              <tbody>
+                {data.top10ValorImobilizado.map((p) => (
+                  <tr key={p.produtoId}>
+                    <Td className="font-mono text-xs">{p.sku}</Td>
+                    <Td>{p.nome}</Td>
+                    <Td>{p.saldo}</Td>
+                    <Td>{moeda(p.valor)}</Td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+
+          {/* Celular: lista compacta — 4 colunas não cabem sem cortar valor/saldo. */}
+          <div className="flex flex-col gap-1 md:hidden">
+            {data.top10ValorImobilizado.map((p) => (
+              <div key={p.produtoId} className="flex items-center gap-2 border-b border-stroke/10 py-2 text-sm last:border-0">
+                <div className="min-w-0 flex-1">
+                  <div className="font-mono text-xs text-muted">{p.sku}</div>
+                  <div className="truncate text-ink">{p.nome}</div>
+                </div>
+                <div className="shrink-0 text-right">
+                  <div className="text-ink [font-variant-numeric:tabular-nums]">{moeda(p.valor)}</div>
+                  <div className="text-xs text-muted [font-variant-numeric:tabular-nums]">saldo {p.saldo}</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </Card>
       </div>
     </section>

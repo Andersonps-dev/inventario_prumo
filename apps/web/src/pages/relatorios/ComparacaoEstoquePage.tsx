@@ -161,10 +161,7 @@ export function ComparacaoEstoquePage() {
     <div className="flex flex-col gap-4">
       <div>
         <h1 className="text-xl font-semibold text-ink">Comparação de estoque</h1>
-        <p className="text-sm text-muted">
-          Envie a contagem do seu sistema externo e confira contra o Invexa — o Invexa é a referência (fazemos
-          inventário nele), a diferença mostra o quanto ele tem a mais ou a menos em relação ao arquivo enviado.
-        </p>
+        <p className="text-sm text-muted">Confira a contagem de um sistema externo contra o saldo do Invexa.</p>
       </div>
 
       <Card className="flex flex-col gap-3">

@@ -101,11 +101,7 @@ export function FeiraDetailPage() {
                     Fechar grêmio e gerar relatório
                   </Button>
                 </div>
-                <p className="text-xs text-muted">
-                  Vendeu tudo? Pode fechar direto — o que sobrar reservado já é considerado vendido automaticamente, sem
-                  precisar devolver 0. O item nunca sai do depósito de origem: só fica reservado enquanto o grêmio está
-                  aberto.
-                </p>
+                <p className="text-xs text-muted">Vendeu tudo? Pode fechar direto — o que sobrar reservado já entra como vendido.</p>
               </div>
             </>
           )}

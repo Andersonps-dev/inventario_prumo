@@ -56,13 +56,15 @@ export function TransferenciaDetailPage() {
           <div className="font-mono text-sm text-muted">{transferencia.codigo}</div>
           <Badge tom={transferencia.status}>{transferencia.status}</Badge>
         </div>
-        <div className="mt-1 flex items-center gap-2 text-sm text-ink">
-          <span className="text-muted">Depósito {transferencia.deposito.nome}:</span>
-          <span className="font-mono">{transferencia.enderecoOrigem.interno ? '—' : transferencia.enderecoOrigem.codigo}</span>
-          <span className="text-muted">→</span>
-          <span className="font-mono">{transferencia.enderecoDestino.interno ? '—' : transferencia.enderecoDestino.codigo}</span>
+        <div className="mt-1 text-sm">
+          <div className="text-muted">Depósito {transferencia.deposito.nome}</div>
+          <div className="mt-0.5 flex items-center gap-2 font-mono text-ink">
+            <span className="whitespace-nowrap">{transferencia.enderecoOrigem.interno ? '—' : transferencia.enderecoOrigem.codigo}</span>
+            <span className="shrink-0 text-muted">→</span>
+            <span className="whitespace-nowrap">{transferencia.enderecoDestino.interno ? '—' : transferencia.enderecoDestino.codigo}</span>
+          </div>
         </div>
-        <div className="text-sm text-muted">Criada por {transferencia.criadoPorUsuario.nome} em {new Date(transferencia.criadoEm).toLocaleString('pt-BR')}</div>
+        <div className="mt-1 text-sm text-muted">Criada por {transferencia.criadoPorUsuario.nome} em {new Date(transferencia.criadoEm).toLocaleString('pt-BR')}</div>
         {transferencia.status === 'EFETIVADA' && transferencia.efetivadoEm && (
           <div className="text-sm text-muted">
             Efetivada por {transferencia.efetivadoPorUsuario?.nome ?? '—'} em {new Date(transferencia.efetivadoEm).toLocaleString('pt-BR')}
@@ -80,7 +82,7 @@ export function TransferenciaDetailPage() {
       {transferencia.status === 'ABERTA' && podeGerenciar && (
         <>
           <TransferenciaBipagem transferenciaId={transferenciaId} />
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
             <Button variante="primaria" disabled={transferencia.itens.length === 0} onClick={() => setConfirmandoEfetivar(true)}>
               Efetivar transferência
             </Button>

@@ -78,7 +78,7 @@ export function EntradaDetailPage() {
       {entrada.status === 'RASCUNHO' && podeGerenciar && (
         <>
           <EntradaBipagem entradaId={entradaId} />
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
             <Button variante="primaria" disabled={entrada.itens.length === 0} onClick={() => setConfirmandoFinalizar(true)}>
               Finalizar entrada e distribuir
             </Button>

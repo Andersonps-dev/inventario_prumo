@@ -51,24 +51,42 @@ export function BlocoOperacao({ filtros }: { filtros: FiltrosDashboard }) {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Card>
           <div className="mb-2 text-sm font-semibold text-ink">Produtividade por operador</div>
-          <Table>
-            <thead>
-              <tr>
-                <Th>Operador</Th>
-                <Th>Contagens</Th>
-                <Th>Contagens/h</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.produtividadePorOperador.map((p) => (
-                <tr key={p.usuarioId}>
-                  <Td>{p.nome}</Td>
-                  <Td>{p.totalContagens}</Td>
-                  <Td>{p.contagensPorHora.toFixed(1)}</Td>
+
+          {/* Desktop/tablet: tabela completa. */}
+          <div className="hidden md:block">
+            <Table>
+              <thead>
+                <tr>
+                  <Th>Operador</Th>
+                  <Th>Contagens</Th>
+                  <Th>Contagens/h</Th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
+              </thead>
+              <tbody>
+                {data.produtividadePorOperador.map((p) => (
+                  <tr key={p.usuarioId}>
+                    <Td>{p.nome}</Td>
+                    <Td>{p.totalContagens}</Td>
+                    <Td>{p.contagensPorHora.toFixed(1)}</Td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+
+          {/* Celular: lista compacta — 3ª coluna cortava na tabela. */}
+          <div className="flex flex-col gap-1 md:hidden">
+            {data.produtividadePorOperador.map((p) => (
+              <div key={p.usuarioId} className="flex items-center gap-2 border-b border-stroke/10 py-2 text-sm last:border-0">
+                <div className="min-w-0 flex-1 truncate text-ink">{p.nome}</div>
+                <div className="shrink-0 text-right">
+                  <div className="text-ink [font-variant-numeric:tabular-nums]">{p.totalContagens} contagens</div>
+                  <div className="text-xs text-muted [font-variant-numeric:tabular-nums]">{p.contagensPorHora.toFixed(1)}/h</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
           <div className="mt-3 text-xs text-muted">
             Tempo médio abertura → efetivação:{' '}
             <span className="font-semibold text-ink">

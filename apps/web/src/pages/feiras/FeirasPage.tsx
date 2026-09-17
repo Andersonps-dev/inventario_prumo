@@ -40,9 +40,7 @@ export function FeirasPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-semibold text-ink">Grêmio</h1>
-          <p className="text-sm text-muted">
-            Leve itens do estoque pra vender fora — o item continua no depósito de origem, só fica reservado. O que não voltar vira relatório de venda.
-          </p>
+          <p className="text-sm text-muted">Leve itens pra vender fora sem tirar do depósito — só ficam reservados.</p>
         </div>
         {temPapel('ADMIN', 'SUPERVISOR') && (
           <Button variante="primaria" onClick={() => setCriando(true)}>

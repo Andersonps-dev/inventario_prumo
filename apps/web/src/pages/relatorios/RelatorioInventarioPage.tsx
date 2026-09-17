@@ -104,70 +104,117 @@ export function RelatorioInventarioPage() {
         </div>
       )}
 
-      <Table>
-        <thead>
-          <tr>
-            <Th sortKey="data" ordenacao={ordenacao} onSort={alternar}>
-              Data
-            </Th>
-            <Th sortKey="sku" ordenacao={ordenacao} onSort={alternar}>
-              SKU
-            </Th>
-            <Th sortKey="codigoBarras" ordenacao={ordenacao} onSort={alternar}>
-              Código de barras
-            </Th>
-            <Th sortKey="nome" ordenacao={ordenacao} onSort={alternar}>
-              Produto
-            </Th>
-            <Th sortKey="endereco" ordenacao={ordenacao} onSort={alternar}>
-              Endereço
-            </Th>
-            <Th sortKey="saldoEstoque" ordenacao={ordenacao} onSort={alternar}>
-              Saldo em estoque
-            </Th>
-            <Th sortKey="contagem" ordenacao={ordenacao} onSort={alternar}>
-              Contagem
-            </Th>
-            <Th sortKey="diferenca" ordenacao={ordenacao} onSort={alternar}>
-              Diferença
-            </Th>
-          </tr>
-        </thead>
-        <tbody>
-          {isLoading && (
+      {/* Desktop/tablet: tabela completa. */}
+      <div className="hidden md:block">
+        <Table>
+          <thead>
             <tr>
-              <Td className="text-muted">Carregando…</Td>
+              <Th sortKey="data" ordenacao={ordenacao} onSort={alternar}>
+                Data
+              </Th>
+              <Th sortKey="sku" ordenacao={ordenacao} onSort={alternar}>
+                SKU
+              </Th>
+              <Th sortKey="codigoBarras" ordenacao={ordenacao} onSort={alternar}>
+                Código de barras
+              </Th>
+              <Th sortKey="nome" ordenacao={ordenacao} onSort={alternar}>
+                Produto
+              </Th>
+              <Th sortKey="endereco" ordenacao={ordenacao} onSort={alternar}>
+                Endereço
+              </Th>
+              <Th sortKey="saldoEstoque" ordenacao={ordenacao} onSort={alternar}>
+                Saldo em estoque
+              </Th>
+              <Th sortKey="contagem" ordenacao={ordenacao} onSort={alternar}>
+                Contagem
+              </Th>
+              <Th sortKey="diferenca" ordenacao={ordenacao} onSort={alternar}>
+                Diferença
+              </Th>
             </tr>
-          )}
-          {linhasOrdenadas?.map((l, i) => (
-            <tr key={i}>
-              <Td className="whitespace-nowrap text-xs text-muted [font-variant-numeric:tabular-nums]">
-                {new Date(l.data).toLocaleString('pt-BR')}
-              </Td>
-              <Td className="font-mono text-xs">{l.sku}</Td>
-              <Td className="font-mono text-xs text-muted">{l.codigoBarras ?? '—'}</Td>
-              <Td>{l.nome}</Td>
-              <Td className="font-mono text-xs text-muted">{l.enderecoCodigo}</Td>
-              <Td className="[font-variant-numeric:tabular-nums]">{l.saldoEstoque}</Td>
-              <Td className="[font-variant-numeric:tabular-nums]">
-                {l.contagem !== null ? l.contagem : <Badge tom="PENDENTE">pendente</Badge>}
-              </Td>
-              <Td
-                className={`[font-variant-numeric:tabular-nums] ${
-                  l.diferenca ? (l.diferenca > 0 ? 'font-semibold text-success' : 'font-semibold text-danger') : ''
-                }`}
-              >
-                {l.diferenca !== null ? (l.diferenca > 0 ? `+${l.diferenca}` : l.diferenca) : '—'}
-              </Td>
-            </tr>
-          ))}
-          {linhasOrdenadas && linhasOrdenadas.length === 0 && (
-            <tr>
-              <Td className="text-muted">Nenhuma contagem encontrada para os filtros selecionados.</Td>
-            </tr>
-          )}
-        </tbody>
-      </Table>
+          </thead>
+          <tbody>
+            {isLoading && (
+              <tr>
+                <Td className="text-muted">Carregando…</Td>
+              </tr>
+            )}
+            {linhasOrdenadas?.map((l, i) => (
+              <tr key={i}>
+                <Td className="whitespace-nowrap text-xs text-muted [font-variant-numeric:tabular-nums]">
+                  {new Date(l.data).toLocaleString('pt-BR')}
+                </Td>
+                <Td className="font-mono text-xs">{l.sku}</Td>
+                <Td className="font-mono text-xs text-muted">{l.codigoBarras ?? '—'}</Td>
+                <Td>{l.nome}</Td>
+                <Td className="font-mono text-xs text-muted">{l.enderecoCodigo}</Td>
+                <Td className="[font-variant-numeric:tabular-nums]">{l.saldoEstoque}</Td>
+                <Td className="[font-variant-numeric:tabular-nums]">
+                  {l.contagem !== null ? l.contagem : <Badge tom="PENDENTE">pendente</Badge>}
+                </Td>
+                <Td
+                  className={`[font-variant-numeric:tabular-nums] ${
+                    l.diferenca ? (l.diferenca > 0 ? 'font-semibold text-success' : 'font-semibold text-danger') : ''
+                  }`}
+                >
+                  {l.diferenca !== null ? (l.diferenca > 0 ? `+${l.diferenca}` : l.diferenca) : '—'}
+                </Td>
+              </tr>
+            ))}
+            {linhasOrdenadas && linhasOrdenadas.length === 0 && (
+              <tr>
+                <Td className="text-muted">Nenhuma contagem encontrada para os filtros selecionados.</Td>
+              </tr>
+            )}
+          </tbody>
+        </Table>
+      </div>
+
+      {/* Celular: cards empilhados — 8 colunas não cabem, código de barras fica só no desktop/export. */}
+      <div className="flex flex-col gap-2 md:hidden">
+        {isLoading && <div className="text-sm text-muted">Carregando…</div>}
+        {linhasOrdenadas?.map((l, i) => (
+          <Card key={i} padding="p-3">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className="font-mono text-xs text-muted">{l.sku}</div>
+                <div className="truncate text-sm font-medium text-ink">{l.nome}</div>
+                <div className="font-mono text-[11px] text-warning">{l.enderecoCodigo}</div>
+              </div>
+              <div className="shrink-0 text-right text-[11px] text-muted [font-variant-numeric:tabular-nums]">
+                {new Date(l.data).toLocaleDateString('pt-BR')}
+              </div>
+            </div>
+            <div className="mt-2.5 grid grid-cols-3 gap-2 text-center">
+              <div className="rounded-md bg-surface py-1.5">
+                <div className="text-[10px] uppercase tracking-wide text-muted">Saldo</div>
+                <div className="text-sm font-semibold text-ink [font-variant-numeric:tabular-nums]">{l.saldoEstoque}</div>
+              </div>
+              <div className="rounded-md bg-surface py-1.5">
+                <div className="text-[10px] uppercase tracking-wide text-muted">Contagem</div>
+                <div className="text-sm font-semibold text-ink [font-variant-numeric:tabular-nums]">
+                  {l.contagem !== null ? l.contagem : <Badge tom="PENDENTE">pendente</Badge>}
+                </div>
+              </div>
+              <div className="rounded-md bg-surface py-1.5">
+                <div className="text-[10px] uppercase tracking-wide text-muted">Diferença</div>
+                <div
+                  className={`text-sm font-semibold [font-variant-numeric:tabular-nums] ${
+                    l.diferenca ? (l.diferenca > 0 ? 'text-success' : 'text-danger') : 'text-ink'
+                  }`}
+                >
+                  {l.diferenca !== null ? (l.diferenca > 0 ? `+${l.diferenca}` : l.diferenca) : '—'}
+                </div>
+              </div>
+            </div>
+          </Card>
+        ))}
+        {linhasOrdenadas && linhasOrdenadas.length === 0 && (
+          <div className="p-3 text-sm text-muted">Nenhuma contagem encontrada para os filtros selecionados.</div>
+        )}
+      </div>
     </div>
   );
 }
