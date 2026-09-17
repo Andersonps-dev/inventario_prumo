@@ -30,6 +30,13 @@ enum OrigemTipo {
   MANUAL
   IMPORTACAO
   EVENTO_VENDA
+  TRANSFERENCIA_ITEM
+}
+
+enum StatusTransferencia {
+  ABERTA
+  EFETIVADA
+  CANCELADA
 }
 
 enum StatusEventoVenda {
@@ -109,20 +116,22 @@ model Empresa {
   ativo    Boolean  @default(true)
   criadoEm DateTime @default(now()) @map("criado_em")
 
-  produtos        Produto[]
-  depositos       Deposito[]
-  enderecos       Endereco[]
-  saldosEstoque   SaldoEstoque[]
-  movimentos      MovimentoEstoque[]
-  escopos         EscopoInventario[]
-  escopoItens     EscopoItem[]
-  contagens       Contagem[]
-  usuarios        Usuario[]
-  auditorias      Auditoria[]
-  exportacoes     ExportacaoJob[]
-  eventosVenda    EventoVenda[]
-  reservasEventos EventoVendaReserva[]
-  posicoesEventos EventoVendaPosicao[]
+  produtos           Produto[]
+  depositos          Deposito[]
+  enderecos          Endereco[]
+  saldosEstoque      SaldoEstoque[]
+  movimentos         MovimentoEstoque[]
+  escopos            EscopoInventario[]
+  escopoItens        EscopoItem[]
+  contagens          Contagem[]
+  usuarios           Usuario[]
+  auditorias         Auditoria[]
+  exportacoes        ExportacaoJob[]
+  eventosVenda       EventoVenda[]
+  reservasEventos    EventoVendaReserva[]
+  posicoesEventos    EventoVendaPosicao[]
+  transferencias     Transferencia[]
+  transferenciaItens TransferenciaItem[]
 
   @@map("empresa")
 }
@@ -144,10 +153,11 @@ model Produto {
   criadoEm      DateTime @default(now()) @map("criado_em")
   atualizadoEm  DateTime @updatedAt @map("atualizado_em")
 
-  saldos          SaldoEstoque[]
-  movimentos      MovimentoEstoque[]
-  itensEscopo     EscopoItem[]
-  reservasEventos EventoVendaReserva[]
+  saldos             SaldoEstoque[]
+  movimentos         MovimentoEstoque[]
+  itensEscopo        EscopoItem[]
+  reservasEventos    EventoVendaReserva[]
+  itensTransferencia TransferenciaItem[]
 
   @@unique([empresaId, sku])
   @@unique([empresaId, codigoBarras])
@@ -167,7 +177,8 @@ model Deposito {
   escopos    EscopoInventario[]
   enderecos  Endereco[]
 
-  eventosOrigem EventoVenda[] @relation("EventoDepositoOrigem")
+  eventosOrigem  EventoVenda[]   @relation("EventoDepositoOrigem")
+  transferencias Transferencia[]
 
   @@unique([empresaId, nome])
   @@map("deposito")
@@ -200,6 +211,9 @@ model Endereco {
   itensEscopo     EscopoItem[]
   reservasEventos EventoVendaReserva[]
   posicoesEventos EventoVendaPosicao[]
+
+  transferenciasOrigem  Transferencia[] @relation("TransferenciaOrigem")
+  transferenciasDestino Transferencia[] @relation("TransferenciaDestino")
 
   @@unique([empresaId, codigo])
   @@index([depositoId])
@@ -402,6 +416,57 @@ model Contagem {
   @@map("contagem")
 }
 
+// ─────────────── Transferências entre posições ───────────────
+
+// Origem e destino são fixos pra transferência inteira (não por item, ao
+// contrário do Grêmio) — o pedido do usuário foi "escopo de transferência:
+// depósito, posição origem, posição destino", um por vez. A bipagem só soma
+// quantidade por produto (igual ao inventário); o saldo real só muda de
+// verdade em `efetivar`.
+model Transferencia {
+  id                  Int                 @id @default(autoincrement())
+  empresaId           Int                 @map("empresa_id")
+  empresa             Empresa             @relation(fields: [empresaId], references: [id])
+  codigo              String
+  depositoId          Int                 @map("deposito_id")
+  deposito            Deposito            @relation(fields: [depositoId], references: [id])
+  enderecoOrigemId    Int                 @map("endereco_origem_id")
+  enderecoOrigem      Endereco            @relation("TransferenciaOrigem", fields: [enderecoOrigemId], references: [id])
+  enderecoDestinoId   Int                 @map("endereco_destino_id")
+  enderecoDestino     Endereco            @relation("TransferenciaDestino", fields: [enderecoDestinoId], references: [id])
+  status              StatusTransferencia @default(ABERTA)
+  criadoPor           Int                 @map("criado_por")
+  criadoPorUsuario    Usuario             @relation("TransferenciaCriadoPor", fields: [criadoPor], references: [id])
+  criadoEm            DateTime            @default(now()) @map("criado_em")
+  efetivadoPor        Int?                @map("efetivado_por")
+  efetivadoPorUsuario Usuario?            @relation("TransferenciaEfetivadoPor", fields: [efetivadoPor], references: [id])
+  efetivadoEm         DateTime?           @map("efetivado_em")
+  canceladoPor        Int?                @map("cancelado_por")
+  canceladoPorUsuario Usuario?            @relation("TransferenciaCanceladoPor", fields: [canceladoPor], references: [id])
+  canceladoEm         DateTime?           @map("cancelado_em")
+  motivoCancelamento  String?             @map("motivo_cancelamento")
+
+  itens TransferenciaItem[]
+
+  @@unique([empresaId, codigo])
+  @@index([empresaId, status])
+  @@map("transferencia")
+}
+
+model TransferenciaItem {
+  id              Int           @id @default(autoincrement())
+  empresaId       Int           @map("empresa_id")
+  empresa         Empresa       @relation(fields: [empresaId], references: [id])
+  transferenciaId Int           @map("transferencia_id")
+  transferencia   Transferencia @relation(fields: [transferenciaId], references: [id])
+  produtoId       Int           @map("produto_id")
+  produto         Produto       @relation(fields: [produtoId], references: [id])
+  quantidade      Decimal       @db.Decimal(14, 4)
+
+  @@unique([transferenciaId, produtoId])
+  @@map("transferencia_item")
+}
+
 // ─────────────── Acesso e auditoria ───────────────
 
 model Usuario {
@@ -416,17 +481,20 @@ model Usuario {
   ativo     Boolean  @default(true)
   criadoEm  DateTime @default(now()) @map("criado_em")
 
-  movimentos          MovimentoEstoque[]
-  escoposResponsavel  EscopoInventario[] @relation("EscopoResponsavel")
-  escoposAbertos      EscopoInventario[] @relation("EscopoAbertoPor")
-  escoposEfetivados   EscopoInventario[] @relation("EscopoEfetivadoPor")
-  escoposCancelados   EscopoInventario[] @relation("EscopoCanceladoPor")
-  contagensFeitas     Contagem[]         @relation("ContagemContadoPor")
-  contagensCanceladas Contagem[]         @relation("ContagemCanceladoPor")
-  auditorias          Auditoria[]
-  exportacoes         ExportacaoJob[]
-  eventosCriados      EventoVenda[]      @relation("EventoCriadoPor")
-  eventosFechados     EventoVenda[]      @relation("EventoFechadoPor")
+  movimentos               MovimentoEstoque[]
+  escoposResponsavel       EscopoInventario[] @relation("EscopoResponsavel")
+  escoposAbertos           EscopoInventario[] @relation("EscopoAbertoPor")
+  escoposEfetivados        EscopoInventario[] @relation("EscopoEfetivadoPor")
+  escoposCancelados        EscopoInventario[] @relation("EscopoCanceladoPor")
+  contagensFeitas          Contagem[]         @relation("ContagemContadoPor")
+  contagensCanceladas      Contagem[]         @relation("ContagemCanceladoPor")
+  auditorias               Auditoria[]
+  exportacoes              ExportacaoJob[]
+  eventosCriados           EventoVenda[]      @relation("EventoCriadoPor")
+  eventosFechados          EventoVenda[]      @relation("EventoFechadoPor")
+  transferenciasCriadas    Transferencia[]    @relation("TransferenciaCriadoPor")
+  transferenciasEfetivadas Transferencia[]    @relation("TransferenciaEfetivadoPor")
+  transferenciasCanceladas Transferencia[]    @relation("TransferenciaCanceladoPor")
 
   @@index([empresaId])
   @@map("usuario")

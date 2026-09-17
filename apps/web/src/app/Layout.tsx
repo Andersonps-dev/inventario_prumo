@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
+  ArrowLeftRight,
   BarChart3,
   Boxes,
   Building2,
@@ -39,6 +40,7 @@ const NAV_CADASTROS = [
 const NAV_OPERACIONAL = [
   { to: '/estoque', label: 'Estoque', icon: Boxes },
   { to: '/feiras', label: 'Grêmio', icon: Store },
+  { to: '/transferencias', label: 'Transferências', icon: ArrowLeftRight },
   { to: '/escopos', label: 'Inventários', icon: ClipboardList },
   // Relatórios/comparação expõem catálogo e estoque em massa — mesmo
   // recorte de papel que o backend exige (relatorios.controller.ts).

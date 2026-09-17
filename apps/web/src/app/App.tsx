@@ -16,6 +16,8 @@ import { RelatorioInventarioPage } from '../pages/relatorios/RelatorioInventario
 import { ComparacaoEstoquePage } from '../pages/relatorios/ComparacaoEstoquePage';
 import { FeirasPage } from '../pages/feiras/FeirasPage';
 import { FeiraDetailPage } from '../pages/feiras/FeiraDetailPage';
+import { TransferenciasListPage } from '../pages/transferencias/TransferenciasListPage';
+import { TransferenciaDetailPage } from '../pages/transferencias/TransferenciaDetailPage';
 import { EmpresasPage } from '../pages/admin/EmpresasPage';
 import { UsuariosPage } from '../pages/admin/UsuariosPage';
 import { AuditoriaPage } from '../pages/admin/AuditoriaPage';
@@ -33,6 +35,7 @@ const TITULOS_POR_ROTA: Record<string, string> = {
   '/enderecos/etiquetas': 'Etiquetas de endereços',
   '/estoque': 'Estoque',
   '/feiras': 'Grêmio',
+  '/transferencias': 'Transferências',
   '/escopos': 'Inventários',
   '/relatorios/inventario': 'Relatório de inventário',
   '/relatorios/comparacao-estoque': 'Comparação de estoque',
@@ -44,6 +47,7 @@ const TITULOS_POR_ROTA: Record<string, string> = {
 const PREFIXOS_POR_ROTA: [string, string][] = [
   ['/escopos/', 'Inventário'],
   ['/feiras/', 'Grêmio'],
+  ['/transferencias/', 'Transferência'],
 ];
 
 function tituloDaRota(pathname: string): string | undefined {
@@ -87,6 +91,8 @@ export function App() {
         <Route path="/estoque" element={<EstoquePage />} />
         <Route path="/feiras" element={<FeirasPage />} />
         <Route path="/feiras/:id" element={<FeiraDetailPage />} />
+        <Route path="/transferencias" element={<TransferenciasListPage />} />
+        <Route path="/transferencias/:id" element={<TransferenciaDetailPage />} />
         <Route path="/escopos" element={<EscoposListPage />} />
         <Route path="/escopos/:id" element={<EscopoDetailPage />} />
         <Route

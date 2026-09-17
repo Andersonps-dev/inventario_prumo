@@ -23,6 +23,12 @@ const CORES: Record<string, string> = {
   EXCLUIR: 'text-danger',
   // Eventos de venda (feiras).
   FECHADO: 'text-success',
+  // Transferências e entradas.
+  ABERTA: 'text-warning',
+  EFETIVADA: 'text-success',
+  CANCELADA: 'text-muted line-through',
+  EM_DISTRIBUICAO: 'text-primary font-semibold',
+  CONCLUIDA: 'text-success',
 };
 
 const PONTOS: Record<string, string> = {
@@ -43,6 +49,11 @@ const PONTOS: Record<string, string> = {
   EXPORTAR: 'bg-muted',
   EXCLUIR: 'bg-danger',
   FECHADO: 'bg-success',
+  ABERTA: 'bg-warning',
+  EFETIVADA: 'bg-success',
+  CANCELADA: 'bg-muted',
+  EM_DISTRIBUICAO: 'bg-primary',
+  CONCLUIDA: 'bg-success',
 };
 
 export function Badge({ children, tom }: { children: React.ReactNode; tom: string }) {

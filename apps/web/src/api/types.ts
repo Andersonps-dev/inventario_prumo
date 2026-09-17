@@ -324,6 +324,46 @@ export interface EventoVenda {
   posicaoAtual?: ItemReservaEvento[] | null;
 }
 
+// ─────────────── Transferências entre posições ───────────────
+
+export type StatusTransferencia = 'ABERTA' | 'EFETIVADA' | 'CANCELADA';
+
+export interface TransferenciaResumo {
+  id: number;
+  codigo: string;
+  status: StatusTransferencia;
+  criadoEm: string;
+  deposito: { nome: string };
+  enderecoOrigem: { codigo: string; interno: boolean };
+  enderecoDestino: { codigo: string; interno: boolean };
+  criadoPorUsuario: { nome: string };
+  _count: { itens: number };
+}
+
+export interface TransferenciaItem {
+  id: number;
+  produtoId: number;
+  quantidade: string;
+  produto: { id: number; sku: string; codigoBarras: string | null; nome: string; unidade: string; precoCusto: string };
+}
+
+export interface TransferenciaDetalhe {
+  id: number;
+  codigo: string;
+  status: StatusTransferencia;
+  deposito: { id: number; nome: string };
+  enderecoOrigem: { id: number; codigo: string; interno: boolean };
+  enderecoDestino: { id: number; codigo: string; interno: boolean };
+  criadoPorUsuario: { nome: string };
+  efetivadoPorUsuario: { nome: string } | null;
+  canceladoPorUsuario: { nome: string } | null;
+  criadoEm: string;
+  efetivadoEm: string | null;
+  canceladoEm: string | null;
+  motivoCancelamento: string | null;
+  itens: TransferenciaItem[];
+}
+
 export interface MovimentoEstoque {
   id: number;
   tipo: string;

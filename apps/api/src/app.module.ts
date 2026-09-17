@@ -17,6 +17,7 @@ import { ExportacaoModule } from './exportacao/exportacao.module';
 import { RelatoriosModule } from './relatorios/relatorios.module';
 import { EnderecosModule } from './enderecos/enderecos.module';
 import { EventosVendaModule } from './eventos-venda/eventos-venda.module';
+import { TransferenciasModule } from './transferencias/transferencias.module';
 import { HealthController } from './health/health.controller';
 
 @Module({
@@ -41,6 +42,7 @@ import { HealthController } from './health/health.controller';
     RelatoriosModule,
     EnderecosModule,
     EventosVendaModule,
+    TransferenciasModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

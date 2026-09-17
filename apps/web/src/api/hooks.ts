@@ -22,6 +22,8 @@ import type {
   Produto,
   QualidadeInventario,
   SaudeEstoque,
+  TransferenciaDetalhe,
+  TransferenciaResumo,
   UsuarioAdmin,
 } from './types';
 
@@ -570,6 +572,67 @@ export function useFecharEventoVenda() {
       qc.invalidateQueries({ queryKey: ['eventos-venda', id] });
       qc.invalidateQueries({ queryKey: ['eventos-venda'] });
       qc.invalidateQueries({ queryKey: ['estoque'] });
+    },
+  });
+}
+
+// ─────────────── Transferências entre posições ───────────────
+
+export function useTransferencias(status?: string) {
+  return useQuery({
+    queryKey: ['transferencias', status],
+    queryFn: () => apiFetch<TransferenciaResumo[]>(`/transferencias${status ? `?status=${status}` : ''}`),
+  });
+}
+
+export function useTransferencia(id: number) {
+  return useQuery({
+    queryKey: ['transferencias', id],
+    queryFn: () => apiFetch<TransferenciaDetalhe>(`/transferencias/${id}`),
+  });
+}
+
+export function useCriarTransferencia() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (dto: { depositoId: number; enderecoOrigemId: number; enderecoDestinoId: number }) =>
+      apiFetch<TransferenciaDetalhe>('/transferencias', { method: 'POST', body: dto }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['transferencias'] }),
+  });
+}
+
+export function useBiparTransferencia() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, produtoId, quantidade }: { id: number; produtoId: number; quantidade: number }) =>
+      apiFetch<TransferenciaDetalhe>(`/transferencias/${id}/itens`, { method: 'POST', body: { produtoId, quantidade } }),
+    onSuccess: (_d, v) => {
+      qc.invalidateQueries({ queryKey: ['transferencias', v.id] });
+      qc.invalidateQueries({ queryKey: ['transferencias'] });
+    },
+  });
+}
+
+export function useEfetivarTransferencia() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => apiFetch<TransferenciaDetalhe>(`/transferencias/${id}/efetivar`, { method: 'POST' }),
+    onSuccess: (_d, id) => {
+      qc.invalidateQueries({ queryKey: ['transferencias', id] });
+      qc.invalidateQueries({ queryKey: ['transferencias'] });
+      qc.invalidateQueries({ queryKey: ['estoque'] });
+    },
+  });
+}
+
+export function useCancelarTransferencia() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, motivo }: { id: number; motivo: string }) =>
+      apiFetch<TransferenciaDetalhe>(`/transferencias/${id}/cancelar`, { method: 'POST', body: { motivo } }),
+    onSuccess: (_d, v) => {
+      qc.invalidateQueries({ queryKey: ['transferencias', v.id] });
+      qc.invalidateQueries({ queryKey: ['transferencias'] });
     },
   });
 }
