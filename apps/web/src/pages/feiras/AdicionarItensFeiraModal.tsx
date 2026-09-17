@@ -33,7 +33,7 @@ export function AdicionarItensFeiraModal({
 
   const posicoesDisponiveis = useMemo(() => {
     return (posicao ?? [])
-      .filter((p) => p.saldo > 0 && !carrinho.some((c) => c.produtoId === p.produto_id && c.enderecoId === p.endereco_id))
+      .filter((p) => p.disponivel > 0 && !carrinho.some((c) => c.produtoId === p.produto_id && c.enderecoId === p.endereco_id))
       .map((p) => ({
         chave: `${p.produto_id}-${p.endereco_id}`,
         produtoId: p.produto_id,
@@ -41,7 +41,7 @@ export function AdicionarItensFeiraModal({
         sku: p.sku,
         nome: p.nome,
         posicao: p.endereco_interno ? 'sem endereço' : p.posicao,
-        disponivel: p.saldo,
+        disponivel: p.disponivel,
       }));
   }, [posicao, carrinho]);
 
@@ -76,9 +76,9 @@ export function AdicionarItensFeiraModal({
   };
 
   return (
-    <Modal title="Adicionar itens à feira" onClose={onClose} largura="max-w-2xl">
+    <Modal title="Adicionar itens ao grêmio" onClose={onClose} largura="max-w-2xl">
       <div className="flex flex-col gap-4">
-        <p className="text-xs text-muted">Escolha mais produtos do depósito de origem pra levar — o saldo sai de lá e entra na feira.</p>
+        <p className="text-xs text-muted">Escolha mais produtos do depósito pra levar — o item continua lá, só fica reservado pro grêmio.</p>
 
         <Field label="Itens a levar (produto — posição)">
           <div className="flex flex-col gap-2 sm:flex-row">
@@ -145,7 +145,7 @@ export function AdicionarItensFeiraModal({
             Cancelar
           </Button>
           <Button type="button" variante="primaria" disabled={adicionar.isPending || carrinho.length === 0} onClick={confirmar}>
-            {adicionar.isPending ? 'Adicionando…' : 'Adicionar à feira'}
+            {adicionar.isPending ? 'Adicionando…' : 'Adicionar ao grêmio'}
           </Button>
         </div>
       </div>

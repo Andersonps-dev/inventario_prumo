@@ -25,7 +25,7 @@ export function EditarFeiraModal({ evento, onClose }: { evento: EventoVenda; onC
   };
 
   return (
-    <Modal title="Editar feira" onClose={onClose} largura="max-w-md">
+    <Modal title="Editar grêmio" onClose={onClose} largura="max-w-md">
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <div className="flex flex-col gap-4 sm:flex-row">
           <div className="sm:flex-1">
@@ -34,7 +34,7 @@ export function EditarFeiraModal({ evento, onClose }: { evento: EventoVenda; onC
             </Field>
           </div>
           <div className="sm:w-48 sm:shrink-0">
-            <Field label="Data da feira (opcional)">
+            <Field label="Data (opcional)">
               <Input type="date" value={dataEvento} onChange={(e) => setDataEvento(e.target.value)} className="w-full" />
             </Field>
           </div>

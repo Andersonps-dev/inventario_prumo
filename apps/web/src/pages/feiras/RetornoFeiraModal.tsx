@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { Modal } from '../../components/Modal';
 import { Field, Input, Select } from '../../components/Input';
 import { Button } from '../../components/Button';
-import { useEnderecos, useRegistrarRetornoEvento } from '../../api/hooks';
+import { useRegistrarRetornoEvento } from '../../api/hooks';
 import { ApiError } from '../../api/client';
-import type { PosicaoEstoqueLinha } from '../../api/types';
+import type { ItemReservaEvento } from '../../api/types';
 
 interface LinhaCarrinho {
   produtoId: number;
@@ -18,50 +18,43 @@ interface LinhaCarrinho {
 
 export function RetornoFeiraModal({
   eventoId,
-  depositoOrigemId,
-  itensNaFeira,
+  itensReservados,
   onClose,
 }: {
   eventoId: number;
-  depositoOrigemId: number;
-  itensNaFeira: PosicaoEstoqueLinha[];
+  itensReservados: ItemReservaEvento[];
   onClose: () => void;
 }) {
   const registrar = useRegistrarRetornoEvento();
-  const { data: enderecos } = useEnderecos({ depositoId: depositoOrigemId, ativo: true });
-  const [produtoEscolhidoId, setProdutoEscolhidoId] = useState<number | ''>('');
-  const [enderecoEscolhidoId, setEnderecoEscolhidoId] = useState<number | ''>('');
+  const [itemEscolhidoId, setItemEscolhidoId] = useState('');
   const [quantidadeEscolhida, setQuantidadeEscolhida] = useState('');
   const [carrinho, setCarrinho] = useState<LinhaCarrinho[]>([]);
   const [erro, setErro] = useState<string | null>(null);
 
-  const disponiveis = itensNaFeira
-    .map((p) => ({ produtoId: p.produto_id, sku: p.sku, nome: p.nome, disponivel: p.saldo }))
-    .filter((p) => p.disponivel > 0);
+  // O que voltar é subtraído da própria reserva — nunca saiu fisicamente do
+  // endereço, então não existe "posição de destino" pra escolher aqui.
+  const disponiveis = itensReservados
+    .map((p) => ({
+      chave: `${p.produto_id}-${p.endereco_id}`,
+      produtoId: p.produto_id,
+      enderecoId: p.endereco_id,
+      sku: p.sku,
+      nome: p.nome,
+      posicao: p.endereco_interno ? 'sem endereço' : p.posicao,
+      disponivel: p.saldo,
+    }))
+    .filter((p) => p.disponivel > 0 && !carrinho.some((c) => c.produtoId === p.produtoId && c.enderecoId === p.enderecoId));
 
-  const produtoSelecionado = disponiveis.find((p) => p.produtoId === produtoEscolhidoId);
-  const enderecoSelecionado = enderecos?.find((e) => e.id === enderecoEscolhidoId);
+  const itemSelecionado = disponiveis.find((p) => p.chave === itemEscolhidoId);
   const quantidadeInvalida =
-    !!produtoSelecionado &&
+    !!itemSelecionado &&
     quantidadeEscolhida !== '' &&
-    (Number(quantidadeEscolhida) <= 0 || Number(quantidadeEscolhida) > produtoSelecionado.disponivel);
+    (Number(quantidadeEscolhida) <= 0 || Number(quantidadeEscolhida) > itemSelecionado.disponivel);
 
   const adicionarAoCarrinho = () => {
-    if (!produtoSelecionado || !enderecoSelecionado || !quantidadeEscolhida || quantidadeInvalida) return;
-    setCarrinho((atual) => [
-      ...atual,
-      {
-        produtoId: produtoSelecionado.produtoId,
-        enderecoId: enderecoSelecionado.id,
-        sku: produtoSelecionado.sku,
-        nome: produtoSelecionado.nome,
-        posicao: enderecoSelecionado.codigo,
-        disponivel: produtoSelecionado.disponivel,
-        quantidade: quantidadeEscolhida,
-      },
-    ]);
-    setProdutoEscolhidoId('');
-    setEnderecoEscolhidoId('');
+    if (!itemSelecionado || !quantidadeEscolhida || quantidadeInvalida) return;
+    setCarrinho((atual) => [...atual, { ...itemSelecionado, quantidade: quantidadeEscolhida }]);
+    setItemEscolhidoId('');
     setQuantidadeEscolhida('');
   };
 
@@ -83,63 +76,47 @@ export function RetornoFeiraModal({
   };
 
   return (
-    <Modal title="Registrar retorno da feira" onClose={onClose} largura="max-w-2xl">
+    <Modal title="Registrar retorno do grêmio" onClose={onClose} largura="max-w-2xl">
       <div className="flex flex-col gap-4">
         <p className="text-xs text-muted">
-          Informe só o que não foi vendido e voltou fisicamente, e em qual posição do depósito de origem ele volta a
-          ficar. Se vendeu tudo, feche a janela e use "Fechar feira e gerar relatório" direto, sem passar por aqui.
+          Informe só o que não foi vendido e voltou fisicamente — o item já está na posição de origem, então basta
+          reduzir a quantidade reservada. Se vendeu tudo, feche a janela e use "Fechar grêmio e gerar relatório" direto.
         </p>
 
-        <Field label="Produto">
-          <Select value={produtoEscolhidoId} onChange={(e) => setProdutoEscolhidoId(e.target.value ? Number(e.target.value) : '')}>
-            <option value="">Selecione um produto…</option>
-            {disponiveis.map((p) => (
-              <option key={p.produtoId} value={p.produtoId}>
-                {p.sku} — {p.nome} (na feira: {p.disponivel})
-              </option>
-            ))}
-          </Select>
-        </Field>
-
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <div className="sm:flex-1">
-            <Field label="Posição de destino">
-              <Select value={enderecoEscolhidoId} onChange={(e) => setEnderecoEscolhidoId(e.target.value ? Number(e.target.value) : '')}>
-                <option value="">Selecione a posição…</option>
-                {enderecos?.map((e) => (
-                  <option key={e.id} value={e.id}>
-                    {e.codigo}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-          </div>
-          <div className="flex gap-2">
-            <div className="flex-1 sm:w-24 sm:flex-none">
-              <Field label="Qtd.">
-                <Input
-                  type="number"
-                  min={0}
-                  step="0.01"
-                  value={quantidadeEscolhida}
-                  onChange={(e) => setQuantidadeEscolhida(e.target.value)}
-                  className="w-full"
-                />
-              </Field>
+        <Field label="Item (produto — posição)">
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Select value={itemEscolhidoId} onChange={(e) => setItemEscolhidoId(e.target.value)} className="sm:flex-1">
+              <option value="">Selecione produto e posição…</option>
+              {disponiveis.map((p) => (
+                <option key={p.chave} value={p.chave}>
+                  {p.sku} — {p.nome} — {p.posicao} (reservado: {p.disponivel})
+                </option>
+              ))}
+            </Select>
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                min={0}
+                step="0.01"
+                placeholder="Qtd."
+                value={quantidadeEscolhida}
+                onChange={(e) => setQuantidadeEscolhida(e.target.value)}
+                className="w-full sm:w-24"
+              />
+              <Button
+                type="button"
+                className="shrink-0"
+                onClick={adicionarAoCarrinho}
+                disabled={!itemSelecionado || !quantidadeEscolhida || quantidadeInvalida}
+              >
+                + Adicionar
+              </Button>
             </div>
-            <Button
-              type="button"
-              className="shrink-0 self-end"
-              onClick={adicionarAoCarrinho}
-              disabled={!produtoSelecionado || !enderecoSelecionado || !quantidadeEscolhida || quantidadeInvalida}
-            >
-              + Adicionar
-            </Button>
           </div>
-        </div>
-        {quantidadeInvalida && (
-          <div className="-mt-2 text-xs text-danger">Quantidade precisa ser maior que zero e não pode passar do que ainda está na feira.</div>
-        )}
+          {quantidadeInvalida && (
+            <div className="mt-1 text-xs text-danger">Quantidade precisa ser maior que zero e não pode passar do que ainda está reservado.</div>
+          )}
+        </Field>
 
         {carrinho.length > 0 && (
           <div className="rounded-md border border-stroke/30">

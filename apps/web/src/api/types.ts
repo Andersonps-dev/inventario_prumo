@@ -258,6 +258,8 @@ export interface PosicaoEstoqueLinha {
   estoque_minimo: number;
   preco_custo: number;
   saldo: number;
+  reservado: number;
+  disponivel: number;
   valor_total: number;
   ultima_movimentacao: string | null;
 }
@@ -281,23 +283,35 @@ export interface RelatorioFechamentoEvento {
   fechadoEm: string;
 }
 
+// O que está reservado pro evento num (produto, endereço) real — o saldo
+// nunca sai do lugar, isso é só "quanto está comprometido" ali.
+export interface ItemReservaEvento {
+  produto_id: number;
+  sku: string;
+  nome: string;
+  unidade: string;
+  endereco_id: number;
+  posicao: string;
+  endereco_interno: boolean;
+  saldo: number;
+  valor_total: number;
+}
+
 export interface EventoVenda {
   id: number;
   titulo: string;
   dataEvento: string | null;
   status: StatusEventoVenda;
   depositoOrigemId: number;
-  depositoVirtualId: number;
   depositoOrigem: { nome: string };
-  depositoVirtual: { nome: string };
   criadoPorUsuario: { nome: string };
   fechadoPorUsuario: { nome: string } | null;
   relatorioFechamento: RelatorioFechamentoEvento | null;
   criadoEm: string;
   fechadoEm: string | null;
   // Só vem preenchido em GET /eventos-venda/:id, e só enquanto ABERTO —
-  // "o que ainda está na feira" (posição atual do depósito virtual).
-  posicaoAtual?: PosicaoEstoqueLinha[] | null;
+  // o que ainda está reservado (não vendido nem devolvido).
+  posicaoAtual?: ItemReservaEvento[] | null;
 }
 
 export interface MovimentoEstoque {

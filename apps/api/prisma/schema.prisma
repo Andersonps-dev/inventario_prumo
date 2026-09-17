@@ -109,18 +109,19 @@ model Empresa {
   ativo    Boolean  @default(true)
   criadoEm DateTime @default(now()) @map("criado_em")
 
-  produtos       Produto[]
-  depositos      Deposito[]
-  enderecos      Endereco[]
-  saldosEstoque  SaldoEstoque[]
-  movimentos     MovimentoEstoque[]
-  escopos        EscopoInventario[]
-  escopoItens    EscopoItem[]
-  contagens      Contagem[]
-  usuarios       Usuario[]
-  auditorias     Auditoria[]
-  exportacoes    ExportacaoJob[]
-  eventosVenda   EventoVenda[]
+  produtos        Produto[]
+  depositos       Deposito[]
+  enderecos       Endereco[]
+  saldosEstoque   SaldoEstoque[]
+  movimentos      MovimentoEstoque[]
+  escopos         EscopoInventario[]
+  escopoItens     EscopoItem[]
+  contagens       Contagem[]
+  usuarios        Usuario[]
+  auditorias      Auditoria[]
+  exportacoes     ExportacaoJob[]
+  eventosVenda    EventoVenda[]
+  reservasEventos EventoVendaReserva[]
 
   @@map("empresa")
 }
@@ -128,23 +129,24 @@ model Empresa {
 // ─────────────── Catálogo ───────────────
 
 model Produto {
-  id             Int      @id @default(autoincrement())
-  empresaId      Int      @map("empresa_id")
-  empresa        Empresa  @relation(fields: [empresaId], references: [id])
-  sku            String
-  codigoBarras   String?  @map("codigo_barras")
-  nome           String
-  descricao      String?
-  unidade        String   @default("UN")
-  precoCusto     Decimal  @default(0) @map("preco_custo") @db.Decimal(14, 4)
-  estoqueMinimo  Decimal  @default(0) @map("estoque_minimo") @db.Decimal(14, 4)
-  ativo          Boolean  @default(true)
-  criadoEm       DateTime @default(now()) @map("criado_em")
-  atualizadoEm   DateTime @updatedAt @map("atualizado_em")
+  id            Int      @id @default(autoincrement())
+  empresaId     Int      @map("empresa_id")
+  empresa       Empresa  @relation(fields: [empresaId], references: [id])
+  sku           String
+  codigoBarras  String?  @map("codigo_barras")
+  nome          String
+  descricao     String?
+  unidade       String   @default("UN")
+  precoCusto    Decimal  @default(0) @map("preco_custo") @db.Decimal(14, 4)
+  estoqueMinimo Decimal  @default(0) @map("estoque_minimo") @db.Decimal(14, 4)
+  ativo         Boolean  @default(true)
+  criadoEm      DateTime @default(now()) @map("criado_em")
+  atualizadoEm  DateTime @updatedAt @map("atualizado_em")
 
-  saldos     SaldoEstoque[]
-  movimentos MovimentoEstoque[]
-  itensEscopo EscopoItem[]
+  saldos          SaldoEstoque[]
+  movimentos      MovimentoEstoque[]
+  itensEscopo     EscopoItem[]
+  reservasEventos EventoVendaReserva[]
 
   @@unique([empresaId, sku])
   @@unique([empresaId, codigoBarras])
@@ -164,8 +166,7 @@ model Deposito {
   escopos    EscopoInventario[]
   enderecos  Endereco[]
 
-  eventosOrigem  EventoVenda[] @relation("EventoDepositoOrigem")
-  eventosVirtual EventoVenda[] @relation("EventoDepositoVirtual")
+  eventosOrigem EventoVenda[] @relation("EventoDepositoOrigem")
 
   @@unique([empresaId, nome])
   @@map("deposito")
@@ -193,9 +194,10 @@ model Endereco {
   ativo      Boolean  @default(true)
   criadoEm   DateTime @default(now()) @map("criado_em")
 
-  saldos      SaldoEstoque[]
-  movimentos  MovimentoEstoque[]
-  itensEscopo EscopoItem[]
+  saldos          SaldoEstoque[]
+  movimentos      MovimentoEstoque[]
+  itensEscopo     EscopoItem[]
+  reservasEventos EventoVendaReserva[]
 
   @@unique([empresaId, codigo])
   @@index([depositoId])
@@ -248,13 +250,15 @@ model MovimentoEstoque {
   @@map("movimento_estoque")
 }
 
-// Saída temporária de estoque pra vender fora (feira, evento, consignação).
-// Ao abrir, o saldo escolhido sai do depósito real e entra num depósito
-// "virtual" dedicado ao evento (mesmo depósito comum, só que sem endereço
-// físico de verdade — existe puramente pra representar "está na feira").
-// Devoluções de itens não vendidos voltam do virtual pro depósito real. Ao
-// fechar, o que sobrar no virtual é o que foi vendido: vira relatório
-// congelado (preço no momento do fechamento) e o saldo restante é baixado.
+// Saída temporária de estoque pra vender fora (feira/grêmio, evento,
+// consignação). O saldo NUNCA sai do depósito/endereço real — ao abrir (ou
+// adicionar itens depois), cada (produto, endereço) escolhido ganha uma
+// "reserva" (EventoVendaReserva) com a quantidade comprometida. O estoque
+// disponível pra qualquer outra operação é saldo - reservas ativas. Devolução
+// só reduz a reserva (o item nunca tinha saído fisicamente do lugar). Ao
+// fechar, o que ainda estiver reservado é o que foi vendido: vira relatório
+// congelado (preço no momento do fechamento), o saldo real é baixado de
+// verdade (SAIDA) e as reservas do evento são apagadas.
 model EventoVenda {
   id                  Int               @id @default(autoincrement())
   empresaId           Int               @map("empresa_id")
@@ -263,8 +267,6 @@ model EventoVenda {
   dataEvento          DateTime?         @map("data_evento") @db.Date
   depositoOrigemId    Int               @map("deposito_origem_id")
   depositoOrigem      Deposito          @relation("EventoDepositoOrigem", fields: [depositoOrigemId], references: [id])
-  depositoVirtualId   Int               @map("deposito_virtual_id")
-  depositoVirtual     Deposito          @relation("EventoDepositoVirtual", fields: [depositoVirtualId], references: [id])
   status              StatusEventoVenda @default(ABERTO)
   relatorioFechamento Json?             @map("relatorio_fechamento")
   criadoPor           Int               @map("criado_por")
@@ -274,37 +276,59 @@ model EventoVenda {
   fechadoPorUsuario   Usuario?          @relation("EventoFechadoPor", fields: [fechadoPor], references: [id])
   fechadoEm           DateTime?         @map("fechado_em")
 
+  reservas EventoVendaReserva[]
+
   @@index([empresaId, status])
   @@map("evento_venda")
+}
+
+// Quanto de um (produto, endereço) real está comprometido com um evento
+// aberto. Não é saldo nem movimento — é só uma reserva lógica; some quando o
+// evento fecha (convertida em SAIDA real) ou quando reduzida por retorno.
+model EventoVendaReserva {
+  id            Int         @id @default(autoincrement())
+  empresaId     Int         @map("empresa_id")
+  empresa       Empresa     @relation(fields: [empresaId], references: [id])
+  eventoVendaId Int         @map("evento_venda_id")
+  eventoVenda   EventoVenda @relation(fields: [eventoVendaId], references: [id])
+  produtoId     Int         @map("produto_id")
+  produto       Produto     @relation(fields: [produtoId], references: [id])
+  enderecoId    Int         @map("endereco_id")
+  endereco      Endereco    @relation(fields: [enderecoId], references: [id])
+  quantidade    Decimal     @db.Decimal(14, 4)
+
+  @@unique([eventoVendaId, produtoId, enderecoId])
+  @@index([empresaId, produtoId, enderecoId])
+  @@map("evento_venda_reserva")
 }
 
 // ─────────────── Inventário ───────────────
 
 model EscopoInventario {
-  id                  Int           @id @default(autoincrement())
-  empresaId           Int           @map("empresa_id")
-  empresa             Empresa       @relation(fields: [empresaId], references: [id])
+  id                  Int          @id @default(autoincrement())
+  empresaId           Int          @map("empresa_id")
+  empresa             Empresa      @relation(fields: [empresaId], references: [id])
   codigo              String
   titulo              String
-  depositoId          Int           @map("deposito_id")
-  deposito            Deposito      @relation(fields: [depositoId], references: [id])
-  status              StatusEscopo  @default(RASCUNHO)
-  criterioSelecao     Json?         @map("criterio_selecao")
-  responsavelId       Int?          @map("responsavel_id")
-  responsavel         Usuario?      @relation("EscopoResponsavel", fields: [responsavelId], references: [id])
-  prazo               DateTime?     @db.Date
+  depositoId          Int          @map("deposito_id")
+  deposito            Deposito     @relation(fields: [depositoId], references: [id])
+  status              StatusEscopo @default(RASCUNHO)
+  criterioSelecao     Json?        @map("criterio_selecao")
+  responsavelId       Int?         @map("responsavel_id")
+  responsavel         Usuario?     @relation("EscopoResponsavel", fields: [responsavelId], references: [id])
+  prazo               DateTime?    @db.Date
   observacao          String?
-  abertoPor           Int?          @map("aberto_por")
-  abertoPorUsuario    Usuario?      @relation("EscopoAbertoPor", fields: [abertoPor], references: [id])
-  abertoEm            DateTime?     @map("aberto_em")
-  efetivadoPor        Int?          @map("efetivado_por")
-  efetivadoPorUsuario Usuario?      @relation("EscopoEfetivadoPor", fields: [efetivadoPor], references: [id])
-  efetivadoEm         DateTime?     @map("efetivado_em")
-  canceladoPor        Int?          @map("cancelado_por")
-  canceladoPorUsuario Usuario?      @relation("EscopoCanceladoPor", fields: [canceladoPor], references: [id])
-  canceladoEm         DateTime?     @map("cancelado_em")
-  motivoCancelamento  String?       @map("motivo_cancelamento")
-  criadoEm            DateTime      @default(now()) @map("criado_em")
+  abertoPor           Int?         @map("aberto_por")
+  abertoPorUsuario    Usuario?     @relation("EscopoAbertoPor", fields: [abertoPor], references: [id])
+  abertoEm            DateTime?    @map("aberto_em")
+  efetivadoPor        Int?         @map("efetivado_por")
+  efetivadoPorUsuario Usuario?     @relation("EscopoEfetivadoPor", fields: [efetivadoPor], references: [id])
+  efetivadoEm         DateTime?    @map("efetivado_em")
+  canceladoPor        Int?         @map("cancelado_por")
+  canceladoPorUsuario Usuario?     @relation("EscopoCanceladoPor", fields: [canceladoPor], references: [id])
+  canceladoEm         DateTime?    @map("cancelado_em")
+  motivoCancelamento  String?      @map("motivo_cancelamento")
+  criadoEm            DateTime     @default(now()) @map("criado_em")
 
   itens EscopoItem[]
 
@@ -313,20 +337,20 @@ model EscopoInventario {
 }
 
 model EscopoItem {
-  id                  Int              @id @default(autoincrement())
-  empresaId           Int              @map("empresa_id")
-  empresa             Empresa          @relation(fields: [empresaId], references: [id])
-  escopoId            Int              @map("escopo_id")
-  escopo              EscopoInventario @relation(fields: [escopoId], references: [id])
-  produtoId           Int              @map("produto_id")
-  produto             Produto          @relation(fields: [produtoId], references: [id])
-  enderecoId          Int              @map("endereco_id")
-  endereco            Endereco         @relation(fields: [enderecoId], references: [id])
-  saldoCongelado      Decimal          @map("saldo_congelado") @db.Decimal(14, 4)
-  saldoNaEfetivacao   Decimal?         @map("saldo_na_efetivacao") @db.Decimal(14, 4)
-  quantidadeFinal     Decimal?         @map("quantidade_final") @db.Decimal(14, 4)
-  diferenca           Decimal?         @db.Decimal(14, 4)
-  status              StatusEscopoItem @default(PENDENTE)
+  id                Int              @id @default(autoincrement())
+  empresaId         Int              @map("empresa_id")
+  empresa           Empresa          @relation(fields: [empresaId], references: [id])
+  escopoId          Int              @map("escopo_id")
+  escopo            EscopoInventario @relation(fields: [escopoId], references: [id])
+  produtoId         Int              @map("produto_id")
+  produto           Produto          @relation(fields: [produtoId], references: [id])
+  enderecoId        Int              @map("endereco_id")
+  endereco          Endereco         @relation(fields: [enderecoId], references: [id])
+  saldoCongelado    Decimal          @map("saldo_congelado") @db.Decimal(14, 4)
+  saldoNaEfetivacao Decimal?         @map("saldo_na_efetivacao") @db.Decimal(14, 4)
+  quantidadeFinal   Decimal?         @map("quantidade_final") @db.Decimal(14, 4)
+  diferenca         Decimal?         @db.Decimal(14, 4)
+  status            StatusEscopoItem @default(PENDENTE)
 
   contagens Contagem[]
 
@@ -336,22 +360,22 @@ model EscopoItem {
 }
 
 model Contagem {
-  id                  Int             @id @default(autoincrement())
-  empresaId           Int             @map("empresa_id")
-  empresa             Empresa         @relation(fields: [empresaId], references: [id])
-  escopoItemId        Int             @map("escopo_item_id")
-  escopoItem          EscopoItem      @relation(fields: [escopoItemId], references: [id])
+  id                  Int            @id @default(autoincrement())
+  empresaId           Int            @map("empresa_id")
+  empresa             Empresa        @relation(fields: [empresaId], references: [id])
+  escopoItemId        Int            @map("escopo_item_id")
+  escopoItem          EscopoItem     @relation(fields: [escopoItemId], references: [id])
   sequencia           Int
-  quantidade          Decimal         @db.Decimal(14, 4)
-  status              StatusContagem  @default(VALIDA)
+  quantidade          Decimal        @db.Decimal(14, 4)
+  status              StatusContagem @default(VALIDA)
   observacao          String?
-  contadoPor          Int             @map("contado_por")
-  contadoPorUsuario   Usuario         @relation("ContagemContadoPor", fields: [contadoPor], references: [id])
-  contadoEm           DateTime        @default(now()) @map("contado_em")
-  canceladoPor        Int?            @map("cancelado_por")
-  canceladoPorUsuario Usuario?        @relation("ContagemCanceladoPor", fields: [canceladoPor], references: [id])
-  canceladoEm         DateTime?       @map("cancelado_em")
-  motivoCancelamento  String?         @map("motivo_cancelamento")
+  contadoPor          Int            @map("contado_por")
+  contadoPorUsuario   Usuario        @relation("ContagemContadoPor", fields: [contadoPor], references: [id])
+  contadoEm           DateTime       @default(now()) @map("contado_em")
+  canceladoPor        Int?           @map("cancelado_por")
+  canceladoPorUsuario Usuario?       @relation("ContagemCanceladoPor", fields: [canceladoPor], references: [id])
+  canceladoEm         DateTime?      @map("cancelado_em")
+  motivoCancelamento  String?        @map("motivo_cancelamento")
 
   @@index([escopoItemId, sequencia])
   @@index([empresaId, contadoPor])

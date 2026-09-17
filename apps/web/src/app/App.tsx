@@ -32,7 +32,7 @@ const TITULOS_POR_ROTA: Record<string, string> = {
   '/enderecos': 'Endereços',
   '/enderecos/etiquetas': 'Etiquetas de endereços',
   '/estoque': 'Estoque',
-  '/feiras': 'Feiras',
+  '/feiras': 'Grêmio',
   '/escopos': 'Inventários',
   '/relatorios/inventario': 'Relatório de inventário',
   '/relatorios/comparacao-estoque': 'Comparação de estoque',
@@ -43,7 +43,7 @@ const TITULOS_POR_ROTA: Record<string, string> = {
 
 const PREFIXOS_POR_ROTA: [string, string][] = [
   ['/escopos/', 'Inventário'],
-  ['/feiras/', 'Feira'],
+  ['/feiras/', 'Grêmio'],
 ];
 
 function tituloDaRota(pathname: string): string | undefined {

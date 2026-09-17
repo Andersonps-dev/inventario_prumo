@@ -498,7 +498,6 @@ export function useCriarEventoVenda() {
       apiFetch<EventoVenda>('/eventos-venda', { method: 'POST', body: dto }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['eventos-venda'] });
-      qc.invalidateQueries({ queryKey: ['depositos'] });
       qc.invalidateQueries({ queryKey: ['estoque'] });
     },
   });
@@ -549,7 +548,6 @@ export function useFecharEventoVenda() {
     onSuccess: (_d, id) => {
       qc.invalidateQueries({ queryKey: ['eventos-venda', id] });
       qc.invalidateQueries({ queryKey: ['eventos-venda'] });
-      qc.invalidateQueries({ queryKey: ['depositos'] });
       qc.invalidateQueries({ queryKey: ['estoque'] });
     },
   });

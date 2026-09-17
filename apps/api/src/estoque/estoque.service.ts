@@ -98,14 +98,17 @@ export class EstoqueService {
    * sempre, mesmo sem nada fisicamente ali.
    */
   async posicaoEstoque(empresaId: number, depositoId?: number) {
-    // mov_agg pré-agregado por (produto, endereço) evita o fan-out de juntar
-    // movimento_estoque (várias linhas) direto com saldo_estoque na mesma query.
+    // mov_agg e reservado_agg pré-agregados por (produto, endereço) evitam o
+    // fan-out de juntar movimento_estoque/evento_venda_reserva (várias
+    // linhas) direto com saldo_estoque na mesma query.
     return this.prisma.$queryRaw`
       SELECT e.id AS endereco_id, e.codigo AS posicao, e.interno AS endereco_interno,
              p.id AS produto_id, p.sku, p.nome, p.unidade,
              p.estoque_minimo::float8 AS estoque_minimo,
              p.preco_custo::float8 AS preco_custo,
              s.quantidade::float8 AS saldo,
+             coalesce(reservado_agg.total, 0)::float8 AS reservado,
+             (s.quantidade - coalesce(reservado_agg.total, 0))::float8 AS disponivel,
              (s.quantidade * p.preco_custo)::float8 AS valor_total,
              mov_agg.ultima AS ultima_movimentacao
       FROM saldo_estoque s
@@ -117,6 +120,12 @@ export class EstoqueService {
         WHERE m.empresa_id = ${empresaId} ${depositoId ? Prisma.sql`AND m.deposito_id = ${depositoId}` : Prisma.empty}
         GROUP BY m.produto_id, m.endereco_id
       ) mov_agg ON mov_agg.produto_id = s.produto_id AND mov_agg.endereco_id = s.endereco_id
+      LEFT JOIN (
+        SELECT r.produto_id, r.endereco_id, SUM(r.quantidade) AS total
+        FROM evento_venda_reserva r
+        WHERE r.empresa_id = ${empresaId}
+        GROUP BY r.produto_id, r.endereco_id
+      ) reservado_agg ON reservado_agg.produto_id = s.produto_id AND reservado_agg.endereco_id = s.endereco_id
       WHERE p.ativo = true AND s.empresa_id = ${empresaId} AND s.quantidade <> 0
         ${depositoId ? Prisma.sql`AND s.deposito_id = ${depositoId}` : Prisma.empty}
       ORDER BY e.codigo ASC, p.nome ASC

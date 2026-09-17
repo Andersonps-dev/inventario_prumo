@@ -39,14 +39,14 @@ export function FeirasPage() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-ink">Feiras</h1>
+          <h1 className="text-xl font-semibold text-ink">Grêmio</h1>
           <p className="text-sm text-muted">
-            Leve itens do estoque pra vender fora — o saldo continua existindo, só muda de lugar. O que não voltar vira relatório de venda.
+            Leve itens do estoque pra vender fora — o item continua no depósito de origem, só fica reservado. O que não voltar vira relatório de venda.
           </p>
         </div>
         {temPapel('ADMIN', 'SUPERVISOR') && (
           <Button variante="primaria" onClick={() => setCriando(true)}>
-            + Nova feira
+            + Novo grêmio
           </Button>
         )}
       </div>
@@ -69,10 +69,10 @@ export function FeirasPage() {
                 Título
               </Th>
               <Th sortKey="dataEvento" ordenacao={ordenacao} onSort={alternar}>
-                Data da feira
+                Data
               </Th>
               <Th sortKey="depositoOrigem" ordenacao={ordenacao} onSort={alternar}>
-                Depósito de origem
+                Depósito
               </Th>
               <Th sortKey="criadoPor" ordenacao={ordenacao} onSort={alternar}>
                 Criado por
@@ -117,7 +117,7 @@ export function FeirasPage() {
             ))}
             {eventosOrdenados && eventosOrdenados.length === 0 && (
               <tr>
-                <Td className="text-muted">Nenhuma feira encontrada.</Td>
+                <Td className="text-muted">Nenhum grêmio encontrado.</Td>
               </tr>
             )}
           </tbody>
@@ -158,7 +158,7 @@ export function FeirasPage() {
             </div>
           </Card>
         ))}
-        {eventosOrdenados && eventosOrdenados.length === 0 && <div className="p-3 text-sm text-muted">Nenhuma feira encontrada.</div>}
+        {eventosOrdenados && eventosOrdenados.length === 0 && <div className="p-3 text-sm text-muted">Nenhum grêmio encontrado.</div>}
       </div>
 
       {criando && <NovaFeiraModal onClose={() => setCriando(false)} />}

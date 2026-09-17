@@ -34,7 +34,7 @@ export function NovaFeiraModal({ onClose }: { onClose: () => void }) {
   // está tirando, não só "quanto tem desse produto no depósito todo".
   const posicoesDisponiveis = useMemo(() => {
     return (posicao ?? [])
-      .filter((p) => p.saldo > 0 && !carrinho.some((c) => c.produtoId === p.produto_id && c.enderecoId === p.endereco_id))
+      .filter((p) => p.disponivel > 0 && !carrinho.some((c) => c.produtoId === p.produto_id && c.enderecoId === p.endereco_id))
       .map((p) => ({
         chave: `${p.produto_id}-${p.endereco_id}`,
         produtoId: p.produto_id,
@@ -42,7 +42,7 @@ export function NovaFeiraModal({ onClose }: { onClose: () => void }) {
         sku: p.sku,
         nome: p.nome,
         posicao: p.endereco_interno ? 'sem endereço' : p.posicao,
-        disponivel: p.saldo,
+        disponivel: p.disponivel,
       }));
   }, [posicao, carrinho]);
 
@@ -77,27 +77,27 @@ export function NovaFeiraModal({ onClose }: { onClose: () => void }) {
       onClose();
       navigate(`/feiras/${evento.id}`);
     } catch (e) {
-      setErro(e instanceof ApiError ? e.message : 'Não foi possível criar a feira.');
+      setErro(e instanceof ApiError ? e.message : 'Não foi possível criar o grêmio.');
     }
   };
 
   return (
-    <Modal title="Nova feira" onClose={onClose} largura="max-w-2xl">
+    <Modal title="Novo grêmio" onClose={onClose} largura="max-w-2xl">
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <div className="flex flex-col gap-4 sm:flex-row">
           <div className="sm:flex-1">
             <Field label="Título">
-              <Input required placeholder="Feira de Setembro, Bazar da praça…" value={titulo} onChange={(e) => setTitulo(e.target.value)} />
+              <Input required placeholder="Grêmio de Setembro, Bazar da praça…" value={titulo} onChange={(e) => setTitulo(e.target.value)} />
             </Field>
           </div>
           <div className="sm:w-48 sm:shrink-0">
-            <Field label="Data da feira (opcional)">
+            <Field label="Data (opcional)">
               <Input type="date" value={dataEvento} onChange={(e) => setDataEvento(e.target.value)} className="w-full" />
             </Field>
           </div>
         </div>
 
-        <Field label="Depósito de origem">
+        <Field label="Depósito">
           <Select
             required
             value={depositoOrigemId}
@@ -182,7 +182,7 @@ export function NovaFeiraModal({ onClose }: { onClose: () => void }) {
             Cancelar
           </Button>
           <Button type="submit" variante="primaria" disabled={criar.isPending || carrinho.length === 0}>
-            {criar.isPending ? 'Criando…' : 'Criar feira'}
+            {criar.isPending ? 'Criando…' : 'Criar grêmio'}
           </Button>
         </div>
       </form>

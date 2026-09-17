@@ -31,6 +31,7 @@ export function EstoquePage() {
     sku: (p) => p.sku,
     nome: (p) => p.nome,
     saldo: (p) => p.saldo,
+    reservado: (p) => p.reservado,
     estoqueMinimo: (p) => p.estoque_minimo,
     valorTotal: (p) => p.valor_total,
     ultimaMovimentacao: (p) => p.ultima_movimentacao,
@@ -84,6 +85,9 @@ export function EstoquePage() {
               <Th sortKey="saldo" ordenacao={ordenacao} onSort={alternar}>
                 Saldo
               </Th>
+              <Th sortKey="reservado" ordenacao={ordenacao} onSort={alternar}>
+                Reservado
+              </Th>
               <Th sortKey="estoqueMinimo" ordenacao={ordenacao} onSort={alternar}>
                 Mínimo
               </Th>
@@ -109,6 +113,7 @@ export function EstoquePage() {
                 <Td>{p.nome}</Td>
                 <Td>{p.unidade}</Td>
                 <Td>{p.saldo}</Td>
+                <Td className={p.reservado > 0 ? 'font-medium text-warning' : undefined}>{p.reservado > 0 ? p.reservado : '—'}</Td>
                 <Td>{p.estoque_minimo}</Td>
                 <Td>{p.valor_total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</Td>
                 <Td className="text-xs text-muted">
@@ -144,7 +149,7 @@ export function EstoquePage() {
                 <div className="text-sm font-semibold text-ink">{p.valor_total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div>
               </div>
             </div>
-            <div className="mt-2.5 grid grid-cols-3 gap-2 text-center">
+            <div className="mt-2.5 grid grid-cols-4 gap-2 text-center">
               <div className="rounded-md bg-surface py-1.5">
                 <div className="text-[10px] uppercase tracking-wide text-muted">Un.</div>
                 <div className="text-sm font-semibold text-ink">{p.unidade}</div>
@@ -152,6 +157,12 @@ export function EstoquePage() {
               <div className="rounded-md bg-surface py-1.5">
                 <div className="text-[10px] uppercase tracking-wide text-muted">Saldo</div>
                 <div className="text-sm font-semibold text-ink [font-variant-numeric:tabular-nums]">{p.saldo}</div>
+              </div>
+              <div className="rounded-md bg-surface py-1.5">
+                <div className="text-[10px] uppercase tracking-wide text-muted">Reservado</div>
+                <div className={`text-sm font-semibold [font-variant-numeric:tabular-nums] ${p.reservado > 0 ? 'text-warning' : 'text-ink'}`}>
+                  {p.reservado > 0 ? p.reservado : '—'}
+                </div>
               </div>
               <div className="rounded-md bg-surface py-1.5">
                 <div className="text-[10px] uppercase tracking-wide text-muted">Mínimo</div>

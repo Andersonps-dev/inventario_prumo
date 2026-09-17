@@ -22,7 +22,8 @@ export function ContagemRapida({
   const adicionar = useAdicionarItens();
   const queryClient = useQueryClient();
   const [codigo, setCodigo] = useState('');
-  const [itemAlvo, setItemAlvo] = useState<EscopoItem | null>(null);
+  // Vazio = soma 1 a cada bipagem. Digitar um número usa ele em vez de 1
+  // (ex.: caixa fechada com 24 unidades) — some ao que já foi contado, nunca substitui.
   const [quantidade, setQuantidade] = useState('');
   const [erro, setErro] = useState<string | null>(null);
   const [avisoSincronizacao, setAvisoSincronizacao] = useState<string | null>(null);
@@ -33,8 +34,8 @@ export function ContagemRapida({
   const [codigoEndereco, setCodigoEndereco] = useState('');
   const [produtoParaAdicionar, setProdutoParaAdicionar] = useState<Produto | null>(null);
   const [buscandoProduto, setBuscandoProduto] = useState(false);
+  const [registrando, setRegistrando] = useState(false);
   const inputCodigoRef = useRef<HTMLInputElement>(null);
-  const inputQuantidadeRef = useRef<HTMLInputElement>(null);
   const inputEnderecoRef = useRef<HTMLInputElement>(null);
 
   // Endereços já com item neste escopo.
@@ -121,9 +122,9 @@ export function ContagemRapida({
   }, [atualizarPendentes, sincronizar]);
 
   const cancelar = useCallback(() => {
-    setItemAlvo(null);
     setProdutoParaAdicionar(null);
     setCodigo('');
+    setErro(null);
     inputCodigoRef.current?.focus();
   }, []);
 
@@ -146,11 +147,43 @@ export function ContagemRapida({
 
   const trocarEndereco = () => {
     setEnderecoAtualId(null);
-    setItemAlvo(null);
     setProdutoParaAdicionar(null);
     setCodigo('');
     setErro(null);
     setTimeout(() => inputEnderecoRef.current?.focus(), 0);
+  };
+
+  /** Registra a contagem (soma no backend) e devolve o foco pro código, pronto pra próxima bipagem. */
+  const registrarContagemItem = async (item: EscopoItem, quantidadeNum: number) => {
+    const pendente: Omit<ContagemPendente, 'id'> = {
+      escopoId,
+      escopoItemId: item.id,
+      quantidade: quantidadeNum,
+      sku: item.produto.sku,
+      nomeProduto: item.produto.nome,
+      criadoEm: new Date().toISOString(),
+    };
+
+    if (!navigator.onLine) {
+      await enfileirarContagem(pendente);
+      atualizarPendentes();
+      return;
+    }
+
+    try {
+      await registrar.mutateAsync({ escopoId, escopoItemId: item.id, quantidade: quantidadeNum });
+    } catch (e) {
+      if (e instanceof ApiError) {
+        // O backend respondeu e recusou de propósito (item cancelado, escopo
+        // mudou de status, etc.) — reenviar depois nunca vai funcionar.
+        // Propaga pro chamador manter o código bipado visível em vez de
+        // limpar e deixar o operador achar que já contou.
+        throw e;
+      }
+      // Falha de rede de verdade (offline "mentiroso", instabilidade) — não perde a contagem.
+      await enfileirarContagem(pendente);
+      atualizarPendentes();
+    }
   };
 
   const buscar = async (event: React.FormEvent) => {
@@ -160,14 +193,28 @@ export function ContagemRapida({
     const termo = codigo.trim().toLowerCase();
     if (!termo) return;
 
+    const quantidadeNum = quantidade.trim() === '' ? 1 : Number(quantidade);
+    if (!Number.isFinite(quantidadeNum) || quantidadeNum <= 0) {
+      setErro('Quantidade precisa ser maior que zero.');
+      return;
+    }
+
     const bate = (sku: string, codigoBarras: string | null) => sku.toLowerCase() === termo || codigoBarras?.toLowerCase() === termo;
 
     const candidatos = itens.filter((i) => i.status !== 'CANCELADO' && bate(i.produto.sku, i.produto.codigoBarras));
     const item = enderecoAtual ? candidatos.find((i) => i.enderecoId === enderecoAtual.id) : candidatos[0];
     if (item) {
-      setItemAlvo(item);
-      setQuantidade('');
-      setTimeout(() => inputQuantidadeRef.current?.focus(), 0);
+      setRegistrando(true);
+      try {
+        await registrarContagemItem(item, quantidadeNum);
+        setCodigo('');
+        setQuantidade('');
+        inputCodigoRef.current?.focus();
+      } catch (e) {
+        setErro(e instanceof ApiError ? e.message : 'Não foi possível registrar a contagem.');
+      } finally {
+        setRegistrando(false);
+      }
       return;
     }
 
@@ -199,6 +246,11 @@ export function ContagemRapida({
   const confirmarAdicaoAqui = async () => {
     if (!produtoParaAdicionar || !enderecoAtual) return;
     setErro(null);
+    const quantidadeNum = quantidade.trim() === '' ? 1 : Number(quantidade);
+    if (!Number.isFinite(quantidadeNum) || quantidadeNum <= 0) {
+      setErro('Quantidade precisa ser maior que zero.');
+      return;
+    }
     try {
       const resultado = await adicionar.mutateAsync({
         id: escopoId,
@@ -206,57 +258,15 @@ export function ContagemRapida({
       });
       const novoItem = resultado.itens[0];
       setProdutoParaAdicionar(null);
-      setCodigo('');
       if (novoItem) {
-        setItemAlvo(novoItem);
-        setQuantidade('');
-        setTimeout(() => inputQuantidadeRef.current?.focus(), 0);
+        await registrarContagemItem(novoItem, quantidadeNum);
       }
+      setCodigo('');
+      setQuantidade('');
+      inputCodigoRef.current?.focus();
     } catch (e) {
       setErro(e instanceof ApiError ? e.message : 'Não foi possível adicionar o item.');
     }
-  };
-
-  const confirmar = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!itemAlvo || quantidade === '') return;
-    setErro(null);
-
-    const pendente: Omit<ContagemPendente, 'id'> = {
-      escopoId,
-      escopoItemId: itemAlvo.id,
-      quantidade: Number(quantidade),
-      sku: itemAlvo.produto.sku,
-      nomeProduto: itemAlvo.produto.nome,
-      criadoEm: new Date().toISOString(),
-    };
-
-    if (!navigator.onLine) {
-      await enfileirarContagem(pendente);
-      atualizarPendentes();
-    } else {
-      try {
-        await registrar.mutateAsync({ escopoId, escopoItemId: itemAlvo.id, quantidade: Number(quantidade) });
-      } catch (e) {
-        if (e instanceof ApiError) {
-          // O backend respondeu e recusou de propósito (item cancelado,
-          // escopo mudou de status, etc.) — reenviar depois nunca vai
-          // funcionar. Mostra o erro e mantém o item selecionado, em vez de
-          // empurrar pra fila offline e deixar o operador achar que só
-          // ficou "pendente de sincronizar".
-          setErro(e.message);
-          return;
-        }
-        // Falha de rede de verdade (offline "mentiroso", instabilidade) — não perde a contagem.
-        await enfileirarContagem(pendente);
-        atualizarPendentes();
-      }
-    }
-
-    setItemAlvo(null);
-    setCodigo('');
-    setQuantidade('');
-    inputCodigoRef.current?.focus();
   };
 
   return (
@@ -315,35 +325,12 @@ export function ContagemRapida({
               )}
             </div>
           )}
-          {itemAlvo ? (
-            <form onSubmit={confirmar} className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-              <div className="text-sm text-ink">
-                <span className="font-mono font-semibold">{itemAlvo.produto.sku}</span> — {itemAlvo.produto.nome}
-              </div>
-              <div className="flex gap-2">
-                <input
-                  ref={inputQuantidadeRef}
-                  type="number"
-                  inputMode="decimal"
-                  step="0.01"
-                  placeholder="Quantidade"
-                  value={quantidade}
-                  onChange={(e) => setQuantidade(e.target.value)}
-                  className="w-full min-w-0 flex-1 rounded-md border border-stroke px-3 py-3 text-base outline-none focus:border-primary focus:ring-1 focus:ring-primary sm:w-32 sm:flex-none md:py-2 md:text-sm"
-                />
-                <Button type="submit" variante="primaria" disabled={registrar.isPending} className="flex-1 sm:flex-none">
-                  Confirmar <span className="hidden sm:inline">(Enter)</span>
-                </Button>
-                <Button type="button" onClick={cancelar} className="flex-1 sm:flex-none">
-                  Cancelar <span className="hidden sm:inline">(Esc)</span>
-                </Button>
-              </div>
-            </form>
-          ) : produtoParaAdicionar && enderecoAtual ? (
+          {produtoParaAdicionar && enderecoAtual ? (
             <div className="flex flex-col gap-2 rounded-md border border-warning/50 bg-warning/10 p-3 text-sm">
               <div className="text-ink">
                 <span className="font-mono font-semibold">{produtoParaAdicionar.sku}</span> — {produtoParaAdicionar.nome} não
-                consta no endereço <span className="font-mono font-semibold">{enderecoAtual.codigo}</span> no sistema.
+                consta no endereço <span className="font-mono font-semibold">{enderecoAtual.codigo}</span> no sistema. Vai
+                contar <span className="font-semibold">{quantidade.trim() === '' ? 1 : Number(quantidade)}</span> unidade(s) ao adicionar.
               </div>
               <div className="flex gap-2">
                 <Button
@@ -355,21 +342,13 @@ export function ContagemRapida({
                 >
                   {adicionar.isPending ? 'Adicionando…' : 'Encontrei aqui — adicionar e contar'}
                 </Button>
-                <Button
-                  type="button"
-                  onClick={() => {
-                    setProdutoParaAdicionar(null);
-                    setCodigo('');
-                    inputCodigoRef.current?.focus();
-                  }}
-                  className="flex-1 sm:flex-none"
-                >
+                <Button type="button" onClick={cancelar} className="flex-1 sm:flex-none">
                   Cancelar
                 </Button>
               </div>
             </div>
           ) : (
-            <form onSubmit={buscar} className="flex gap-2">
+            <form onSubmit={buscar} className="flex flex-col gap-2 sm:flex-row">
               <input
                 ref={inputCodigoRef}
                 autoFocus
@@ -381,8 +360,18 @@ export function ContagemRapida({
                 onChange={(e) => setCodigo(e.target.value)}
                 className="min-w-0 flex-1 rounded-md border border-stroke px-3 py-3 text-base outline-none focus:border-primary focus:ring-1 focus:ring-primary md:py-2 md:text-sm"
               />
-              <Button type="submit" variante="primaria" disabled={buscandoProduto} className="shrink-0">
-                {buscandoProduto ? 'Buscando…' : 'Buscar'}
+              <input
+                type="number"
+                inputMode="decimal"
+                step="0.01"
+                min={0}
+                placeholder="Qtd. (padrão 1)"
+                value={quantidade}
+                onChange={(e) => setQuantidade(e.target.value)}
+                className="w-full rounded-md border border-stroke px-3 py-3 text-base outline-none focus:border-primary focus:ring-1 focus:ring-primary sm:w-32 md:py-2 md:text-sm"
+              />
+              <Button type="submit" variante="primaria" disabled={buscandoProduto || registrando} className="shrink-0">
+                {buscandoProduto ? 'Buscando…' : registrando ? 'Somando…' : 'Bipar'}
               </Button>
             </form>
           )}

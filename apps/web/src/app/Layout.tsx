@@ -38,7 +38,7 @@ const NAV_CADASTROS = [
 
 const NAV_OPERACIONAL = [
   { to: '/estoque', label: 'Estoque', icon: Boxes },
-  { to: '/feiras', label: 'Feiras', icon: Store },
+  { to: '/feiras', label: 'Grêmio', icon: Store },
   { to: '/escopos', label: 'Inventários', icon: ClipboardList },
   // Relatórios/comparação expõem catálogo e estoque em massa — mesmo
   // recorte de papel que o backend exige (relatorios.controller.ts).

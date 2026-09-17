@@ -31,7 +31,7 @@ export function FeiraDetailPage() {
   if (isLoading || !evento) return <div className="text-muted">Carregando…</div>;
 
   const podeGerenciar = temPapel('ADMIN', 'SUPERVISOR');
-  const itensNaFeira = evento.posicaoAtual ?? [];
+  const itensReservados = evento.posicaoAtual ?? [];
 
   const onFechar = async () => {
     setErro(null);
@@ -39,13 +39,13 @@ export function FeiraDetailPage() {
       await fechar.mutateAsync(eventoId);
       setConfirmandoFechar(false);
     } catch (e) {
-      setErro(e instanceof ApiError ? e.message : 'Não foi possível fechar a feira.');
+      setErro(e instanceof ApiError ? e.message : 'Não foi possível fechar o grêmio.');
     }
   };
 
   return (
     <div className="flex flex-col gap-4">
-      <VoltarLink to="/feiras" label="Feiras" />
+      <VoltarLink to="/feiras" label="Grêmios" />
 
       <Card>
         <div className="flex items-center justify-between gap-3">
@@ -60,11 +60,11 @@ export function FeiraDetailPage() {
           <Badge tom={evento.status}>{evento.status}</Badge>
         </div>
         <div className="mt-1 text-sm text-muted">
-          Depósito de origem: {evento.depositoOrigem.nome} · Criado por {evento.criadoPorUsuario.nome} em{' '}
+          Depósito: {evento.depositoOrigem.nome} · Criado por {evento.criadoPorUsuario.nome} em{' '}
           {new Date(evento.criadoEm).toLocaleString('pt-BR')}
         </div>
         <div className="text-sm text-muted">
-          Data da feira: {evento.dataEvento ? new Date(evento.dataEvento).toLocaleDateString('pt-BR') : 'não definida'}
+          Data do grêmio: {evento.dataEvento ? new Date(evento.dataEvento).toLocaleDateString('pt-BR') : 'não definida'}
         </div>
         {evento.status === 'FECHADO' && evento.fechadoEm && (
           <div className="text-sm text-muted">
@@ -80,22 +80,23 @@ export function FeiraDetailPage() {
             <div className="flex flex-col gap-1.5">
               <div className="flex flex-wrap gap-2">
                 <Button onClick={() => setAdicionandoItens(true)}>Adicionar itens</Button>
-                <Button disabled={itensNaFeira.length === 0} onClick={() => setRegistrandoRetorno(true)}>
+                <Button disabled={itensReservados.length === 0} onClick={() => setRegistrandoRetorno(true)}>
                   Registrar retorno
                 </Button>
                 <Button variante="perigo" onClick={() => setConfirmandoFechar(true)}>
-                  Fechar feira e gerar relatório
+                  Fechar grêmio e gerar relatório
                 </Button>
               </div>
               <p className="text-xs text-muted">
                 Só registre retorno pros itens que não venderam e voltaram fisicamente. Vendeu tudo? Pode fechar direto —
-                o que sobrar na feira já é considerado vendido automaticamente, sem precisar registrar retorno de 0.
+                o que sobrar reservado já é considerado vendido automaticamente, sem precisar registrar retorno de 0. O
+                item nunca sai do depósito de origem: só fica reservado enquanto o grêmio está aberto.
               </p>
             </div>
           )}
 
           <div>
-            <div className="mb-2 text-sm font-semibold text-ink">Itens ainda na feira (não vendidos nem devolvidos)</div>
+            <div className="mb-2 text-sm font-semibold text-ink">Itens ainda reservados (não vendidos nem devolvidos)</div>
 
             {/* Desktop/tablet: tabela completa. */}
             <div className="hidden md:block">
@@ -104,24 +105,26 @@ export function FeiraDetailPage() {
                   <tr>
                     <Th>SKU</Th>
                     <Th>Produto</Th>
+                    <Th>Posição</Th>
                     <Th>Un.</Th>
                     <Th>Quantidade</Th>
                     <Th>Valor a custo</Th>
                   </tr>
                 </thead>
                 <tbody>
-                  {itensNaFeira.map((p) => (
-                    <tr key={p.produto_id}>
+                  {itensReservados.map((p) => (
+                    <tr key={`${p.produto_id}-${p.endereco_id}`}>
                       <Td className="font-mono text-xs">{p.sku}</Td>
                       <Td>{p.nome}</Td>
+                      <Td className="font-mono text-xs text-muted">{p.endereco_interno ? '—' : p.posicao}</Td>
                       <Td>{p.unidade}</Td>
                       <Td>{p.saldo}</Td>
                       <Td>{moeda(p.valor_total)}</Td>
                     </tr>
                   ))}
-                  {itensNaFeira.length === 0 && (
+                  {itensReservados.length === 0 && (
                     <tr>
-                      <Td className="text-muted">Nada na feira ainda — tudo foi devolvido ou vendido.</Td>
+                      <Td className="text-muted">Nada reservado ainda — tudo foi devolvido ou vendido.</Td>
                     </tr>
                   )}
                 </tbody>
@@ -130,12 +133,13 @@ export function FeiraDetailPage() {
 
             {/* Celular: cards empilhados. */}
             <div className="flex flex-col gap-2 md:hidden">
-              {itensNaFeira.map((p) => (
-                <Card key={p.produto_id} padding="p-3">
+              {itensReservados.map((p) => (
+                <Card key={`${p.produto_id}-${p.endereco_id}`} padding="p-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="font-mono text-xs text-muted">{p.sku}</div>
                       <div className="truncate text-sm font-medium text-ink">{p.nome}</div>
+                      {!p.endereco_interno && <div className="font-mono text-[11px] text-warning">{p.posicao}</div>}
                     </div>
                     <div className="shrink-0 text-right text-xs text-muted">
                       Valor
@@ -154,8 +158,8 @@ export function FeiraDetailPage() {
                   </div>
                 </Card>
               ))}
-              {itensNaFeira.length === 0 && (
-                <div className="p-3 text-sm text-muted">Nada na feira ainda — tudo foi devolvido ou vendido.</div>
+              {itensReservados.length === 0 && (
+                <div className="p-3 text-sm text-muted">Nada reservado ainda — tudo foi devolvido ou vendido.</div>
               )}
             </div>
           </div>
@@ -271,18 +275,13 @@ export function FeiraDetailPage() {
       )}
 
       {registrandoRetorno && (
-        <RetornoFeiraModal
-          eventoId={eventoId}
-          depositoOrigemId={evento.depositoOrigemId}
-          itensNaFeira={itensNaFeira}
-          onClose={() => setRegistrandoRetorno(false)}
-        />
+        <RetornoFeiraModal eventoId={eventoId} itensReservados={itensReservados} onClose={() => setRegistrandoRetorno(false)} />
       )}
 
       {confirmandoFechar && (
         <ConfirmDialog
-          titulo="Fechar feira?"
-          descricao="Essa ação é irreversível. Tudo que ainda estiver na feira será considerado vendido, entra no relatório com o valor de custo e some do saldo do sistema. Já devolveu tudo que não vendeu?"
+          titulo="Fechar grêmio?"
+          descricao="Essa ação é irreversível. Tudo que ainda estiver reservado será considerado vendido, entra no relatório com o valor de custo e sai do saldo do sistema. Já devolveu tudo que não vendeu?"
           rotuloConfirmar="Sim, fechar e gerar relatório"
           variante="perigo"
           pendente={fechar.isPending}
