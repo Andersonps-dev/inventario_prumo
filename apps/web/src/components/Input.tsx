@@ -1,4 +1,5 @@
 import { Children, isValidElement, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { InputHTMLAttributes, KeyboardEvent, LabelHTMLAttributes, OptionHTMLAttributes, ReactNode } from 'react';
 import { ChevronDown } from 'lucide-react';
 
@@ -78,8 +79,10 @@ export function Select({
   const [aberto, setAberto] = useState(false);
   const [filtro, setFiltro] = useState('');
   const [destaque, setDestaque] = useState(0);
+  const [posicao, setPosicao] = useState<{ top: number; left: number; width: number } | null>(null);
   const raizRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const listaRef = useRef<HTMLUListElement>(null);
 
   const valorAtual = value === undefined || value === null ? '' : String(value);
   const opcaoSelecionada = opcoes.find((o) => o.valor === valorAtual);
@@ -92,16 +95,33 @@ export function Select({
 
   useEffect(() => {
     if (!aberto) return;
+    // A lista é renderizada via portal em document.body (ver comentário
+    // abaixo), então "fora" precisa considerar o próprio raizRef (input) E
+    // o listaRef (as opções) — sem isso, clicar numa opção conta como
+    // clique fora e fecha antes do onMouseDown da opção rodar.
     const aoClicarFora = (e: MouseEvent) => {
-      if (raizRef.current && !raizRef.current.contains(e.target as Node)) fechar();
+      const alvo = e.target as Node;
+      if (raizRef.current?.contains(alvo) || listaRef.current?.contains(alvo)) return;
+      fechar();
     };
     document.addEventListener('mousedown', aoClicarFora);
-    return () => document.removeEventListener('mousedown', aoClicarFora);
+    // Fecha ao rolar (a lista é position:fixed — não acompanha o scroll do
+    // modal/página) ou redimensionar. Capture:true pega scroll de um
+    // container interno (ex.: o próprio modal), não só da janela.
+    window.addEventListener('scroll', fechar, true);
+    window.addEventListener('resize', fechar);
+    return () => {
+      document.removeEventListener('mousedown', aoClicarFora);
+      window.removeEventListener('scroll', fechar, true);
+      window.removeEventListener('resize', fechar);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [aberto]);
 
   const abrir = () => {
     if (disabled) return;
+    const rect = raizRef.current?.getBoundingClientRect();
+    if (rect) setPosicao({ top: rect.bottom + 4, left: rect.left, width: rect.width });
     setFiltro('');
     setDestaque(Math.max(0, opcoesFiltradas.findIndex((o) => o.valor === valorAtual)));
     setAberto(true);
@@ -173,34 +193,43 @@ export function Select({
         className="w-full min-w-[9rem] truncate rounded-md border border-stroke bg-card py-2 pl-3 pr-6 text-sm text-ink outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:bg-surface disabled:text-muted"
       />
       <ChevronDown size={13} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-muted" />
-      {aberto && (
-        // Sem min-w-max de propósito: opção com texto longo ("SKU — Nome —
-        // Posição (disp. X)") quebra em 2 linhas dentro da largura do
-        // input, em vez de esticar a lista pra fora do modal — isso já
-        // vazou visualmente uma vez (texto cortado sem aviso, achando que
-        // "sumiu" um valor) quando o modal ganhou overflow-x-hidden.
-        <ul
-          role="listbox"
-          className="absolute z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-md border border-stroke bg-card py-1 text-sm shadow-lg"
-        >
-          {opcoesFiltradas.length === 0 && <li className="px-3 py-1.5 text-muted">Nenhuma opção encontrada.</li>}
-          {opcoesFiltradas.map((o, i) => (
-            <li
-              key={o.valor}
-              role="option"
-              aria-selected={o.valor === valorAtual}
-              onMouseDown={(e) => {
-                e.preventDefault();
-                selecionar(o);
-              }}
-              onMouseEnter={() => setDestaque(i)}
-              className={`cursor-pointer px-3 py-1.5 leading-snug ${i === destaque ? 'bg-primary/10' : ''} ${o.valor === valorAtual ? 'font-semibold text-ink' : 'text-ink'}`}
-            >
-              {o.rotulo || <span className="text-muted">—</span>}
-            </li>
-          ))}
-        </ul>
-      )}
+      {aberto &&
+        posicao &&
+        // Portal em document.body + position:fixed: um modal tem
+        // overflow-y-auto (rola quando o conteúdo é maior que a tela), e uma
+        // lista posicionada normal (absolute) ficava cortada por esse
+        // overflow sempre que o campo estava perto do fim do modal — a
+        // lista "explodia" pra fora da área visível em vez de aparecer por
+        // cima. Mesma solução já usada no menu "⋮" de linha da tabela.
+        createPortal(
+          <ul
+            ref={listaRef}
+            role="listbox"
+            style={{ position: 'fixed', top: posicao.top, left: posicao.left, width: posicao.width }}
+            // Sem min-w-max de propósito: opção com texto longo ("SKU — Nome
+            // — Posição (disp. X)") quebra em 2 linhas na largura do campo,
+            // em vez de esticar a lista pra fora da tela.
+            className="z-[60] max-h-56 overflow-y-auto rounded-md border border-stroke bg-card py-1 text-sm shadow-lg"
+          >
+            {opcoesFiltradas.length === 0 && <li className="px-3 py-1.5 text-muted">Nenhuma opção encontrada.</li>}
+            {opcoesFiltradas.map((o, i) => (
+              <li
+                key={o.valor}
+                role="option"
+                aria-selected={o.valor === valorAtual}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  selecionar(o);
+                }}
+                onMouseEnter={() => setDestaque(i)}
+                className={`cursor-pointer px-3 py-1.5 leading-snug ${i === destaque ? 'bg-primary/10' : ''} ${o.valor === valorAtual ? 'font-semibold text-ink' : 'text-ink'}`}
+              >
+                {o.rotulo || <span className="text-muted">—</span>}
+              </li>
+            ))}
+          </ul>,
+          document.body,
+        )}
     </div>
   );
 }
