@@ -503,11 +503,23 @@ export interface ItemComPosicao {
 export function useCriarEventoVenda() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (dto: { titulo: string; dataEvento?: string; depositoOrigemId: number; itens: ItemComPosicao[] }) =>
+    mutationFn: (dto: { titulo: string; dataEvento?: string; depositoOrigemId: number; enderecoIds: number[] }) =>
       apiFetch<EventoVenda>('/eventos-venda', { method: 'POST', body: dto }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['eventos-venda'] });
       qc.invalidateQueries({ queryKey: ['estoque'] });
+    },
+  });
+}
+
+export function useAdicionarPosicoesEvento() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, enderecoIds }: { id: number; enderecoIds: number[] }) =>
+      apiFetch<EventoVenda>(`/eventos-venda/${id}/posicoes`, { method: 'POST', body: { enderecoIds } }),
+    onSuccess: (_d, v) => {
+      qc.invalidateQueries({ queryKey: ['eventos-venda', v.id] });
+      qc.invalidateQueries({ queryKey: ['eventos-venda'] });
     },
   });
 }
@@ -524,11 +536,11 @@ export function useAtualizarEventoVenda() {
   });
 }
 
-export function useAdicionarItensEvento() {
+export function useAdicionarItemEvento() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, itens }: { id: number; itens: ItemComPosicao[] }) =>
-      apiFetch<EventoVenda>(`/eventos-venda/${id}/itens`, { method: 'POST', body: { itens } }),
+    mutationFn: ({ id, ...item }: { id: number } & ItemComPosicao) =>
+      apiFetch<EventoVenda>(`/eventos-venda/${id}/itens`, { method: 'POST', body: item }),
     onSuccess: (_d, v) => {
       qc.invalidateQueries({ queryKey: ['eventos-venda', v.id] });
       qc.invalidateQueries({ queryKey: ['eventos-venda'] });
@@ -537,11 +549,11 @@ export function useAdicionarItensEvento() {
   });
 }
 
-export function useRegistrarRetornoEvento() {
+export function useRegistrarRetornoItemEvento() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, itens }: { id: number; itens: ItemComPosicao[] }) =>
-      apiFetch<EventoVenda>(`/eventos-venda/${id}/retorno`, { method: 'POST', body: { itens } }),
+    mutationFn: ({ id, ...item }: { id: number } & ItemComPosicao) =>
+      apiFetch<EventoVenda>(`/eventos-venda/${id}/retorno`, { method: 'POST', body: item }),
     onSuccess: (_d, v) => {
       qc.invalidateQueries({ queryKey: ['eventos-venda', v.id] });
       qc.invalidateQueries({ queryKey: ['eventos-venda'] });

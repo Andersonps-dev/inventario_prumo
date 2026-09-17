@@ -4,7 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { DepositosService } from '../depositos/depositos.service';
 import { EstoqueService } from '../estoque/estoque.service';
 import { AuditoriaService } from '../common/auditoria/auditoria.service';
-import { AdicionarItensEventoDto, AtualizarEventoVendaDto, CriarEventoVendaDto, ItemComPosicaoDto, RegistrarRetornoDto } from './dto/evento-venda.dto';
+import { AdicionarPosicoesDto, AtualizarEventoVendaDto, CriarEventoVendaDto, ItemComPosicaoDto } from './dto/evento-venda.dto';
 
 @Injectable()
 export class EventosVendaService {
@@ -33,6 +33,7 @@ export class EventosVendaService {
         depositoOrigem: { select: { id: true, nome: true } },
         criadoPorUsuario: { select: { nome: true } },
         fechadoPorUsuario: { select: { nome: true } },
+        posicoes: { include: { endereco: { select: { id: true, codigo: true, interno: true } } } },
         reservas: {
           include: {
             produto: { select: { sku: true, nome: true, unidade: true, precoCusto: true } },
@@ -45,7 +46,7 @@ export class EventosVendaService {
 
     // Enquanto ABERTO, "o que ainda está no evento" é a própria lista de
     // reservas — o saldo nunca saiu de fato do depósito/endereço real.
-    const { reservas, ...resto } = evento;
+    const { reservas, posicoes, ...resto } = evento;
     const posicaoAtual =
       evento.status === 'ABERTO'
         ? reservas.map((r) => ({
@@ -61,7 +62,11 @@ export class EventosVendaService {
           }))
         : null;
 
-    return { ...resto, posicaoAtual };
+    return {
+      ...resto,
+      posicoes: posicoes.map((p) => ({ enderecoId: p.endereco.id, codigo: p.endereco.codigo, interno: p.endereco.interno })),
+      posicaoAtual,
+    };
   }
 
   /** Edita título e/ou data da feira — não mexe em item nem em estoque, então vale pra feira aberta ou já fechada. */
@@ -91,14 +96,14 @@ export class EventosVendaService {
   }
 
   /**
-   * Abre um evento: o saldo NÃO sai do depósito real — cada item escolhido
-   * vira uma reserva (produto+endereço+quantidade) contra o saldo já
-   * existente ali. O mesmo depósito continua sendo usado pra tudo, sem
-   * criar nenhum depósito novo por evento.
+   * Abre um evento só com título/data/depósito/posições — sem itens ainda.
+   * As posições viram `EventoVendaPosicao`, a lista de onde vai valer bipar
+   * produto pra reservar. Itens entram depois, um bipe de cada vez, via
+   * `adicionarItem`.
    */
   async criar(dto: CriarEventoVendaDto, usuarioId: number, empresaId: number) {
     const depositoOrigem = await this.depositosService.exigirAtivo(dto.depositoOrigemId, empresaId);
-    await this.validarItens(dto.itens, depositoOrigem.id, empresaId);
+    await this.validarEnderecos(dto.enderecoIds, depositoOrigem.id, empresaId);
 
     const evento = await this.prisma.$transaction(async (tx) => {
       const evento = await tx.eventoVenda.create({
@@ -111,19 +116,12 @@ export class EventosVendaService {
         },
       });
 
-      for (const item of dto.itens) {
-        await this.reservar(tx, {
-          empresaId,
-          eventoVendaId: evento.id,
-          produtoId: item.produtoId,
-          depositoId: depositoOrigem.id,
-          enderecoId: item.enderecoId,
-          quantidade: item.quantidade,
-        });
-      }
+      await tx.eventoVendaPosicao.createMany({
+        data: dto.enderecoIds.map((enderecoId) => ({ empresaId, eventoVendaId: evento.id, enderecoId })),
+      });
 
       await this.auditoria.registrar(
-        { entidade: 'evento_venda', entidadeId: evento.id, acao: 'CRIAR', depois: { ...evento, itens: dto.itens }, usuarioId, empresaId },
+        { entidade: 'evento_venda', entidadeId: evento.id, acao: 'CRIAR', depois: { ...evento, enderecoIds: dto.enderecoIds }, usuarioId, empresaId },
         tx,
       );
 
@@ -133,28 +131,21 @@ export class EventosVendaService {
     return this.buscarPorId(evento.id, empresaId);
   }
 
-  /** Leva mais itens pra um evento já aberto — mesma lógica de `criar`, só reservando mais. */
-  async adicionarItens(id: number, dto: AdicionarItensEventoDto, usuarioId: number, empresaId: number) {
+  /** Amplia as posições habilitadas de um grêmio já aberto — nunca remove, só soma. */
+  async adicionarPosicoes(id: number, dto: AdicionarPosicoesDto, usuarioId: number, empresaId: number) {
     const evento = await this.prisma.eventoVenda.findUnique({ where: { id } });
     if (!evento || evento.empresaId !== empresaId) throw new NotFoundException('Evento de venda não encontrado.');
     if (evento.status !== 'ABERTO') throw new ConflictException('Este evento já está fechado.');
 
-    await this.validarItens(dto.itens, evento.depositoOrigemId, empresaId);
+    await this.validarEnderecos(dto.enderecoIds, evento.depositoOrigemId, empresaId);
 
     await this.prisma.$transaction(async (tx) => {
-      for (const item of dto.itens) {
-        await this.reservar(tx, {
-          empresaId,
-          eventoVendaId: evento.id,
-          produtoId: item.produtoId,
-          depositoId: evento.depositoOrigemId,
-          enderecoId: item.enderecoId,
-          quantidade: item.quantidade,
-        });
-      }
-
+      await tx.eventoVendaPosicao.createMany({
+        data: dto.enderecoIds.map((enderecoId) => ({ empresaId, eventoVendaId: id, enderecoId })),
+        skipDuplicates: true,
+      });
       await this.auditoria.registrar(
-        { entidade: 'evento_venda', entidadeId: evento.id, acao: 'EDITAR', depois: { itensAdicionados: dto.itens }, usuarioId, empresaId },
+        { entidade: 'evento_venda', entidadeId: id, acao: 'EDITAR', depois: { posicoesAdicionadas: dto.enderecoIds }, usuarioId, empresaId },
         tx,
       );
     });
@@ -162,30 +153,55 @@ export class EventosVendaService {
     return this.buscarPorId(id, empresaId);
   }
 
-  /** Devolução de itens não vendidos: o saldo nunca tinha saído do lugar, então só reduz (ou apaga) a reserva daquele item. */
-  async registrarRetorno(id: number, dto: RegistrarRetornoDto, usuarioId: number, empresaId: number) {
+  /** Bipa um produto pro grêmio: soma à reserva já existente desse (produto, endereço) — mesma lógica de "cada bipe soma" do inventário. */
+  async adicionarItem(id: number, dto: ItemComPosicaoDto, usuarioId: number, empresaId: number) {
+    const evento = await this.prisma.eventoVenda.findUnique({ where: { id } });
+    if (!evento || evento.empresaId !== empresaId) throw new NotFoundException('Evento de venda não encontrado.');
+    if (evento.status !== 'ABERTO') throw new ConflictException('Este evento já está fechado.');
+
+    await this.validarItemNoEvento(id, dto, empresaId);
+
+    await this.prisma.$transaction(async (tx) => {
+      await this.reservar(tx, {
+        empresaId,
+        eventoVendaId: evento.id,
+        produtoId: dto.produtoId,
+        depositoId: evento.depositoOrigemId,
+        enderecoId: dto.enderecoId,
+        quantidade: dto.quantidade,
+      });
+
+      await this.auditoria.registrar(
+        { entidade: 'evento_venda', entidadeId: evento.id, acao: 'EDITAR', depois: { itemAdicionado: dto }, usuarioId, empresaId },
+        tx,
+      );
+    });
+
+    return this.buscarPorId(id, empresaId);
+  }
+
+  /** Devolução de um item não vendido: o saldo nunca tinha saído do lugar, então só reduz (ou apaga) a reserva daquele item. */
+  async registrarRetornoItem(id: number, dto: ItemComPosicaoDto, usuarioId: number, empresaId: number) {
     const evento = await this.prisma.eventoVenda.findUnique({ where: { id } });
     if (!evento || evento.empresaId !== empresaId) throw new NotFoundException('Evento de venda não encontrado.');
     if (evento.status !== 'ABERTO') throw new ConflictException('Este evento já está fechado.');
 
     await this.prisma.$transaction(async (tx) => {
-      for (const item of dto.itens) {
-        const reserva = await tx.eventoVendaReserva.findUnique({
-          where: { eventoVendaId_produtoId_enderecoId: { eventoVendaId: id, produtoId: item.produtoId, enderecoId: item.enderecoId } },
-        });
-        if (!reserva || Number(reserva.quantidade) < item.quantidade) {
-          throw new BadRequestException(`Quantidade de retorno maior que a quantidade reservada pra este item no evento.`);
-        }
-        const restante = Number(reserva.quantidade) - item.quantidade;
-        if (restante <= 0) {
-          await tx.eventoVendaReserva.delete({ where: { id: reserva.id } });
-        } else {
-          await tx.eventoVendaReserva.update({ where: { id: reserva.id }, data: { quantidade: restante } });
-        }
+      const reserva = await tx.eventoVendaReserva.findUnique({
+        where: { eventoVendaId_produtoId_enderecoId: { eventoVendaId: id, produtoId: dto.produtoId, enderecoId: dto.enderecoId } },
+      });
+      if (!reserva || Number(reserva.quantidade) < dto.quantidade) {
+        throw new BadRequestException('Quantidade de retorno maior que a quantidade reservada pra este item no evento.');
+      }
+      const restante = Number(reserva.quantidade) - dto.quantidade;
+      if (restante <= 0) {
+        await tx.eventoVendaReserva.delete({ where: { id: reserva.id } });
+      } else {
+        await tx.eventoVendaReserva.update({ where: { id: reserva.id }, data: { quantidade: restante } });
       }
 
       await this.auditoria.registrar(
-        { entidade: 'evento_venda', entidadeId: evento.id, acao: 'EDITAR', depois: { retorno: dto.itens }, usuarioId, empresaId },
+        { entidade: 'evento_venda', entidadeId: evento.id, acao: 'EDITAR', depois: { retorno: dto }, usuarioId, empresaId },
         tx,
       );
     });
@@ -272,18 +288,26 @@ export class EventosVendaService {
     return this.buscarPorId(atualizado.id, empresaId);
   }
 
-  /** Confere que cada produto e cada endereço apontado pelo cliente realmente pertence a esta empresa e a este depósito — nunca confia em IDs vindos de fora. */
-  private async validarItens(itens: ItemComPosicaoDto[], depositoId: number, empresaId: number) {
-    const produtoIds = [...new Set(itens.map((i) => i.produtoId))];
-    const enderecoIds = [...new Set(itens.map((i) => i.enderecoId))];
+  /** Confere que cada endereço apontado pelo cliente realmente pertence a esta empresa e a este depósito — nunca confia em IDs vindos de fora. */
+  private async validarEnderecos(enderecoIds: number[], depositoId: number, empresaId: number) {
+    const idsUnicos = [...new Set(enderecoIds)];
+    const enderecos = await this.prisma.endereco.findMany({ where: { id: { in: idsUnicos }, empresaId, depositoId } });
+    if (enderecos.length !== idsUnicos.length) {
+      throw new BadRequestException('Um ou mais endereços não pertencem ao depósito de origem deste grêmio.');
+    }
+  }
 
-    const [produtos, enderecos] = await Promise.all([
-      this.prisma.produto.findMany({ where: { id: { in: produtoIds }, empresaId } }),
-      this.prisma.endereco.findMany({ where: { id: { in: enderecoIds }, empresaId, depositoId } }),
+  /** Confere que o produto existe nesta empresa e que o endereço bipado é uma das posições habilitadas deste grêmio. */
+  private async validarItemNoEvento(eventoVendaId: number, item: ItemComPosicaoDto, empresaId: number) {
+    const [produto, posicao] = await Promise.all([
+      this.prisma.produto.findUnique({ where: { id: item.produtoId } }),
+      this.prisma.eventoVendaPosicao.findUnique({
+        where: { eventoVendaId_enderecoId: { eventoVendaId, enderecoId: item.enderecoId } },
+      }),
     ]);
-    if (produtos.length !== produtoIds.length) throw new BadRequestException('Um ou mais produtos não pertencem a esta empresa.');
-    if (enderecos.length !== enderecoIds.length) {
-      throw new BadRequestException('Um ou mais endereços não pertencem ao depósito de origem desta feira.');
+    if (!produto || produto.empresaId !== empresaId) throw new BadRequestException('Produto não pertence a esta empresa.');
+    if (!posicao) {
+      throw new BadRequestException('Este endereço não é uma posição habilitada deste grêmio — adicione a posição primeiro.');
     }
   }
 

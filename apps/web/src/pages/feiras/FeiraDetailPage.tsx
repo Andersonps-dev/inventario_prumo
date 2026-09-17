@@ -10,8 +10,8 @@ import { ExportButton } from '../../components/ExportButton';
 import { VoltarLink } from '../../components/VoltarLink';
 import { useAuth } from '../../app/AuthContext';
 import { ApiError } from '../../api/client';
-import { RetornoFeiraModal } from './RetornoFeiraModal';
-import { AdicionarItensFeiraModal } from './AdicionarItensFeiraModal';
+import { GremioBipagem } from './GremioBipagem';
+import { AdicionarPosicoesModal } from './AdicionarPosicoesModal';
 import { EditarFeiraModal } from './EditarFeiraModal';
 
 const moeda = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -23,8 +23,7 @@ export function FeiraDetailPage() {
   const { data: evento, isLoading } = useEventoVenda(eventoId);
   const fechar = useFecharEventoVenda();
   const [editando, setEditando] = useState(false);
-  const [adicionandoItens, setAdicionandoItens] = useState(false);
-  const [registrandoRetorno, setRegistrandoRetorno] = useState(false);
+  const [adicionandoPosicoes, setAdicionandoPosicoes] = useState(false);
   const [confirmandoFechar, setConfirmandoFechar] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
@@ -32,6 +31,8 @@ export function FeiraDetailPage() {
 
   const podeGerenciar = temPapel('ADMIN', 'SUPERVISOR');
   const itensReservados = evento.posicaoAtual ?? [];
+  const posicoes = evento.posicoes ?? [];
+  const posicoesAtuaisIds = new Set(posicoes.map((p) => p.enderecoId));
 
   const onFechar = async () => {
     setErro(null);
@@ -71,28 +72,42 @@ export function FeiraDetailPage() {
             Fechado por {evento.fechadoPorUsuario?.nome ?? '—'} em {new Date(evento.fechadoEm).toLocaleString('pt-BR')}
           </div>
         )}
+        {evento.status === 'ABERTO' && (
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            <span className="text-xs text-muted">Posições:</span>
+            {posicoes.map((p) => (
+              <span key={p.enderecoId} className="rounded-full bg-surface px-2 py-0.5 font-mono text-xs text-ink">
+                {p.interno ? 'sem endereço' : p.codigo}
+              </span>
+            ))}
+            {podeGerenciar && (
+              <button type="button" className="text-xs text-primary hover:underline" onClick={() => setAdicionandoPosicoes(true)}>
+                + Adicionar posições
+              </button>
+            )}
+          </div>
+        )}
         {erro && <div className="mt-2 text-sm text-danger">{erro}</div>}
       </Card>
 
       {evento.status === 'ABERTO' ? (
         <>
           {podeGerenciar && (
-            <div className="flex flex-col gap-1.5">
-              <div className="flex flex-wrap gap-2">
-                <Button onClick={() => setAdicionandoItens(true)}>Adicionar itens</Button>
-                <Button disabled={itensReservados.length === 0} onClick={() => setRegistrandoRetorno(true)}>
-                  Registrar retorno
-                </Button>
-                <Button variante="perigo" onClick={() => setConfirmandoFechar(true)}>
-                  Fechar grêmio e gerar relatório
-                </Button>
+            <>
+              <GremioBipagem eventoId={eventoId} posicoes={posicoes} itensReservados={itensReservados} />
+              <div className="flex flex-col gap-1.5">
+                <div className="flex flex-wrap gap-2">
+                  <Button variante="perigo" onClick={() => setConfirmandoFechar(true)}>
+                    Fechar grêmio e gerar relatório
+                  </Button>
+                </div>
+                <p className="text-xs text-muted">
+                  Vendeu tudo? Pode fechar direto — o que sobrar reservado já é considerado vendido automaticamente, sem
+                  precisar devolver 0. O item nunca sai do depósito de origem: só fica reservado enquanto o grêmio está
+                  aberto.
+                </p>
               </div>
-              <p className="text-xs text-muted">
-                Só registre retorno pros itens que não venderam e voltaram fisicamente. Vendeu tudo? Pode fechar direto —
-                o que sobrar reservado já é considerado vendido automaticamente, sem precisar registrar retorno de 0. O
-                item nunca sai do depósito de origem: só fica reservado enquanto o grêmio está aberto.
-              </p>
-            </div>
+            </>
           )}
 
           <div>
@@ -266,16 +281,13 @@ export function FeiraDetailPage() {
 
       {editando && <EditarFeiraModal evento={evento} onClose={() => setEditando(false)} />}
 
-      {adicionandoItens && (
-        <AdicionarItensFeiraModal
+      {adicionandoPosicoes && (
+        <AdicionarPosicoesModal
           eventoId={eventoId}
           depositoOrigemId={evento.depositoOrigemId}
-          onClose={() => setAdicionandoItens(false)}
+          posicoesAtuaisIds={posicoesAtuaisIds}
+          onClose={() => setAdicionandoPosicoes(false)}
         />
-      )}
-
-      {registrandoRetorno && (
-        <RetornoFeiraModal eventoId={eventoId} itensReservados={itensReservados} onClose={() => setRegistrandoRetorno(false)} />
       )}
 
       {confirmandoFechar && (

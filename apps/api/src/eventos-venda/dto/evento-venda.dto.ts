@@ -1,10 +1,10 @@
-import { Type } from 'class-transformer';
-import { ArrayMinSize, IsArray, IsDateString, IsInt, IsNumber, IsOptional, IsPositive, IsString, MinLength, ValidateNested } from 'class-validator';
+import { ArrayMinSize, IsArray, IsDateString, IsInt, IsNumber, IsOptional, IsPositive, IsString, MinLength } from 'class-validator';
 
-// `enderecoId` sempre se refere a uma posição do depósito de origem da
-// feira — o endereço de onde tirar (ao levar) ou pra onde devolver (ao
-// retornar). O depósito virtual não tem posições reais, só um sentinela
-// (resolvido no service), então nunca aparece aqui.
+// `enderecoId` sempre se refere a uma das posições habilitadas pro grêmio —
+// de onde tirar (ao adicionar) ou pra onde devolver (ao registrar retorno).
+// Cada bipagem é uma chamada com um item só, que soma à reserva existente
+// desse (produto, endereço) no evento — mesma lógica de acumular por bipe já
+// usada na contagem de inventário.
 export class ItemComPosicaoDto {
   @IsInt()
   produtoId!: number;
@@ -31,9 +31,8 @@ export class CriarEventoVendaDto {
 
   @IsArray()
   @ArrayMinSize(1)
-  @ValidateNested({ each: true })
-  @Type(() => ItemComPosicaoDto)
-  itens!: ItemComPosicaoDto[];
+  @IsInt({ each: true })
+  enderecoIds!: number[];
 }
 
 export class AtualizarEventoVendaDto {
@@ -47,18 +46,9 @@ export class AtualizarEventoVendaDto {
   dataEvento?: string;
 }
 
-export class AdicionarItensEventoDto {
+export class AdicionarPosicoesDto {
   @IsArray()
   @ArrayMinSize(1)
-  @ValidateNested({ each: true })
-  @Type(() => ItemComPosicaoDto)
-  itens!: ItemComPosicaoDto[];
-}
-
-export class RegistrarRetornoDto {
-  @IsArray()
-  @ArrayMinSize(1)
-  @ValidateNested({ each: true })
-  @Type(() => ItemComPosicaoDto)
-  itens!: ItemComPosicaoDto[];
+  @IsInt({ each: true })
+  enderecoIds!: number[];
 }

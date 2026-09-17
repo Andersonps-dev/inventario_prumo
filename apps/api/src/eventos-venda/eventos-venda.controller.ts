@@ -6,7 +6,7 @@ import { Papeis } from '../common/decorators/papeis.decorator';
 import { UsuarioAtual, UsuarioAutenticado } from '../common/decorators/usuario-atual.decorator';
 import { EmpresaAtual } from '../common/decorators/empresa-atual.decorator';
 import { EventosVendaService } from './eventos-venda.service';
-import { AdicionarItensEventoDto, AtualizarEventoVendaDto, CriarEventoVendaDto, RegistrarRetornoDto } from './dto/evento-venda.dto';
+import { AdicionarPosicoesDto, AtualizarEventoVendaDto, CriarEventoVendaDto, ItemComPosicaoDto } from './dto/evento-venda.dto';
 
 @UseGuards(JwtAuthGuard, EmpresaScopeGuard, PapeisGuard)
 @Controller('eventos-venda')
@@ -41,25 +41,36 @@ export class EventosVendaController {
   }
 
   @Papeis('SUPERVISOR', 'ADMIN')
-  @Post(':id/itens')
-  adicionarItens(
+  @Post(':id/posicoes')
+  adicionarPosicoes(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: AdicionarItensEventoDto,
+    @Body() dto: AdicionarPosicoesDto,
     @UsuarioAtual() usuario: UsuarioAutenticado,
     @EmpresaAtual() empresaId: number,
   ) {
-    return this.eventosVendaService.adicionarItens(id, dto, usuario.id, empresaId);
+    return this.eventosVendaService.adicionarPosicoes(id, dto, usuario.id, empresaId);
+  }
+
+  @Papeis('SUPERVISOR', 'ADMIN')
+  @Post(':id/itens')
+  adicionarItem(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: ItemComPosicaoDto,
+    @UsuarioAtual() usuario: UsuarioAutenticado,
+    @EmpresaAtual() empresaId: number,
+  ) {
+    return this.eventosVendaService.adicionarItem(id, dto, usuario.id, empresaId);
   }
 
   @Papeis('SUPERVISOR', 'ADMIN')
   @Post(':id/retorno')
-  registrarRetorno(
+  registrarRetornoItem(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: RegistrarRetornoDto,
+    @Body() dto: ItemComPosicaoDto,
     @UsuarioAtual() usuario: UsuarioAutenticado,
     @EmpresaAtual() empresaId: number,
   ) {
-    return this.eventosVendaService.registrarRetorno(id, dto, usuario.id, empresaId);
+    return this.eventosVendaService.registrarRetornoItem(id, dto, usuario.id, empresaId);
   }
 
   @Papeis('SUPERVISOR', 'ADMIN')

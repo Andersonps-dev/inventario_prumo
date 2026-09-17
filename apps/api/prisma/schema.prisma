@@ -122,6 +122,7 @@ model Empresa {
   exportacoes     ExportacaoJob[]
   eventosVenda    EventoVenda[]
   reservasEventos EventoVendaReserva[]
+  posicoesEventos EventoVendaPosicao[]
 
   @@map("empresa")
 }
@@ -198,6 +199,7 @@ model Endereco {
   movimentos      MovimentoEstoque[]
   itensEscopo     EscopoItem[]
   reservasEventos EventoVendaReserva[]
+  posicoesEventos EventoVendaPosicao[]
 
   @@unique([empresaId, codigo])
   @@index([depositoId])
@@ -277,9 +279,27 @@ model EventoVenda {
   fechadoEm           DateTime?         @map("fechado_em")
 
   reservas EventoVendaReserva[]
+  posicoes EventoVendaPosicao[]
 
   @@index([empresaId, status])
   @@map("evento_venda")
+}
+
+// Posições habilitadas pra bipar item neste grêmio — escolhidas na criação,
+// e a lista pode crescer depois com o grêmio já ABERTO (nunca encolhe: tirar
+// uma posição no meio do grêmio aberto exigiria decidir o que fazer com o
+// que já foi bipado dela, então isso não é oferecido).
+model EventoVendaPosicao {
+  id            Int         @id @default(autoincrement())
+  empresaId     Int         @map("empresa_id")
+  empresa       Empresa     @relation(fields: [empresaId], references: [id])
+  eventoVendaId Int         @map("evento_venda_id")
+  eventoVenda   EventoVenda @relation(fields: [eventoVendaId], references: [id])
+  enderecoId    Int         @map("endereco_id")
+  endereco      Endereco    @relation(fields: [enderecoId], references: [id])
+
+  @@unique([eventoVendaId, enderecoId])
+  @@map("evento_venda_posicao")
 }
 
 // Quanto de um (produto, endereço) real está comprometido com um evento

@@ -297,6 +297,14 @@ export interface ItemReservaEvento {
   valor_total: number;
 }
 
+// Posição habilitada pra bipar item neste grêmio — escolhida na criação,
+// pode ganhar mais depois com o grêmio já ABERTO.
+export interface EventoVendaPosicaoInfo {
+  enderecoId: number;
+  codigo: string;
+  interno: boolean;
+}
+
 export interface EventoVenda {
   id: number;
   titulo: string;
@@ -309,6 +317,8 @@ export interface EventoVenda {
   relatorioFechamento: RelatorioFechamentoEvento | null;
   criadoEm: string;
   fechadoEm: string | null;
+  // Só vem preenchido em GET /eventos-venda/:id.
+  posicoes?: EventoVendaPosicaoInfo[];
   // Só vem preenchido em GET /eventos-venda/:id, e só enquanto ABERTO —
   // o que ainda está reservado (não vendido nem devolvido).
   posicaoAtual?: ItemReservaEvento[] | null;
