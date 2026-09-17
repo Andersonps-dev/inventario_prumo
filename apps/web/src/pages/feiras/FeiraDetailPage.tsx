@@ -94,7 +94,7 @@ export function FeiraDetailPage() {
         <>
           {podeGerenciar && (
             <>
-              <GremioBipagem eventoId={eventoId} posicoes={posicoes} itensReservados={itensReservados} />
+              <GremioBipagem eventoId={eventoId} depositoId={evento.depositoOrigemId} posicoes={posicoes} itensReservados={itensReservados} />
               <div className="flex flex-col gap-1.5">
                 <div className="flex flex-wrap gap-2">
                   <Button variante="perigo" onClick={() => setConfirmandoFechar(true)}>
